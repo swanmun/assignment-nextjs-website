@@ -1,0 +1,213 @@
+.page {
+  min-height: 100vh;
+  padding: 64px;
+  background: var(--color-background-elevated);
+  color: var(--color-text-default);
+  font-family: var(--font-family);
+  letter-spacing: var(--font-letter-spacing);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.eyebrow {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--color-text-brand);
+}
+
+.title {
+  font-size: var(--font-size-900);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-line-height-tight);
+}
+
+.description {
+  max-width: 720px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.section + .section {
+  margin-top: 56px;
+}
+
+.sectionTitle {
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+  border-bottom: 2px solid var(--color-border-default);
+  font-size: var(--font-size-500);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-line-height-tight);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.muted {
+  color: var(--color-text-tertiary);
+}
+
+/* ---------- Table ---------- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-weight: var(--font-weight-regular);
+  font-size: 12px;
+  text-align: left;
+  color: var(--color-text-tertiary);
+}
+
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size: var(--font-size-200);
+  vertical-align: middle;
+}
+
+.chip {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.spacingBar {
+  height: 16px;
+  background: var(--color-background-brand);
+}
+
+/* ---------- Color palette ---------- */
+.paletteRow {
+  display: grid;
+  grid-template-columns: 160px repeat(11, minmax(0, 1fr));
+  gap: 8px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.paletteName {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: var(--font-weight-bold);
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.swatchBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  aspect-ratio: 1;
+  padding: 6px;
+  border: 1px solid var(--color-border-subtle);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0;
+}
+
+.semanticGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 32px;
+}
+
+.semanticItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.semanticItem > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.badge {
+  align-self: flex-start;
+  padding: 1px 4px;
+  border: 1px solid currentColor;
+  font-size: 10px;
+}
+
+/* ---------- Typography ---------- */
+.typeRow {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 32px;
+  align-items: center;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.typeMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ---------- Iconography ---------- */
+.iconColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 64px;
+  align-items: start;
+}
+
+.iconTable td:not(:first-child),
+.iconTable th:not(:first-child) {
+  width: 72px;
+  text-align: center;
+}
+
+.iconTable td {
+  height: 52px;
+}
+
+.iconTable svg {
+  display: block;
+  margin: 0 auto;
+}
+
+@media (max-width: 960px) {
+  .page {
+    padding: 32px 16px;
+  }
+
+  .paletteRow {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .paletteName {
+    grid-column: 1 / -1;
+  }
+
+  .typeRow,
+  .iconColumns {
+    grid-template-columns: 1fr;
+  }
+}

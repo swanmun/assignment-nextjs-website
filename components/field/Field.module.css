@@ -1,0 +1,141 @@
+/* TextField · TextArea · Select 공통: 레이블 / 박스 / 헬퍼 */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.label {
+  color: var(--color-text-default);
+}
+
+.disabled .label {
+  color: var(--color-text-disabled);
+}
+
+/* 오목한 입력 박스. 테두리는 outline으로 그려 상태가 바뀌어도 크기가 변하지 않는다. */
+.box {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--color-background-input);
+  box-shadow: var(--effect-sunken);
+  color: var(--color-text-tertiary);
+}
+
+.box:focus-within,
+.box[data-open="true"] {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+}
+
+.error .box {
+  outline: 2px solid var(--color-border-error);
+  outline-offset: -2px;
+}
+
+.disabled .box {
+  background: var(--color-background-disabled);
+  box-shadow: none;
+  outline: 1px solid var(--color-border-disabled);
+  outline-offset: -1px;
+  color: var(--color-text-disabled);
+}
+
+.sm {
+  height: 32px;
+  padding: 0 10px;
+  gap: 6px;
+}
+
+.md {
+  height: 40px;
+  padding: 0 12px;
+  gap: 8px;
+}
+
+.lg {
+  height: 48px;
+  padding: 0 14px;
+  gap: 8px;
+}
+
+/* 입력 텍스트(body-lg) */
+.control {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--color-text-default);
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.control::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 1;
+}
+
+.control:disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.footer {
+  display: flex;
+  gap: 8px;
+}
+
+.helper {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: var(--color-text-tertiary);
+}
+
+.error .helper,
+.error .counter {
+  color: var(--color-text-error);
+}
+
+.disabled .helper,
+.disabled .counter {
+  color: var(--color-text-disabled);
+}
+
+.helper svg {
+  flex: none;
+}
+
+.counter {
+  flex: none;
+  margin-left: auto;
+  color: var(--color-text-tertiary);
+}
+
+.adornment {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.adornment:disabled {
+  cursor: not-allowed;
+}
+
+.adornment:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+}

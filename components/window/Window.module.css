@@ -1,0 +1,144 @@
+/* 레트로 창 패널: 제목 표시줄 · 도구 막대 · 내용 · 상태 표시줄 */
+.window {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px;
+  background: var(--color-background-surface);
+  box-shadow: var(--effect-raised);
+}
+
+.titleBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 4px 0 8px;
+  background: var(--color-background-inverse);
+  color: var(--color-text-inverse-secondary);
+}
+
+.titleIcon {
+  display: inline-flex;
+  flex: none;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titleButton {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: var(--color-background-surface);
+  box-shadow: var(--effect-raised);
+  color: var(--color-text-default);
+  cursor: pointer;
+}
+
+.titleButton:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 1px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.body[hidden] {
+  display: none;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 4px;
+  color: var(--color-text-default);
+}
+
+/* 목록 영역: 오목한 흰 바탕 */
+.well {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+  padding: var(--spacing-12);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-subtle);
+}
+
+.statusBar {
+  display: flex;
+  gap: 4px;
+}
+
+.statusCell {
+  flex: none;
+  min-width: 0;
+  padding: 3px 6px;
+  overflow: hidden;
+  box-shadow: var(--effect-inset);
+  color: var(--color-text-default);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusCell:first-child {
+  flex: 1;
+}
+
+/* 보기 전환(목록/격자) */
+.viewToggle {
+  display: flex;
+  gap: 2px;
+}
+
+.viewButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: var(--color-background-surface);
+  box-shadow: var(--effect-raised);
+  color: var(--color-text-default);
+  cursor: pointer;
+}
+
+.viewButton[aria-pressed="true"] {
+  background: var(--color-background-selected);
+  box-shadow: var(--effect-pressed);
+}
+
+.viewButton:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 1px;
+}
+
+/* 제목 표시줄 없는 볼록 패널 */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-24);
+  min-width: 0;
+  padding: var(--spacing-16);
+  background: var(--color-background-surface);
+  box-shadow: var(--effect-raised);
+}

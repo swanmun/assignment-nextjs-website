@@ -1,0 +1,112 @@
+/* 페이지 공통 레이아웃: 카드 그리드는 1280까지 넓어지고, 그 밖은 좌우 여백으로 처리한다. */
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--pattern-dots-sparse);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+  width: 100%;
+  max-width: calc(var(--layout-max-width) + 2 * var(--spacing-16));
+  margin: 0 auto;
+  padding: var(--spacing-16) var(--spacing-16) var(--spacing-32);
+}
+
+/* 상세·폼·로그인: 읽기 영역 너비로 고정 */
+.narrow {
+  max-width: calc(var(--layout-content-width) + 2 * var(--spacing-16));
+}
+
+/* 플로팅 버튼 자리만큼 아래 여백 */
+.withFab {
+  padding-bottom: 96px;
+}
+
+/* 반응형 카드 그리드: 360 1열 → 768 2열 → 1024 3열 → 1280 4열 */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--layout-card-min-width), 100%), 1fr));
+  gap: var(--spacing-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gridItem {
+  display: flex;
+  min-width: 0;
+}
+
+/* 격자 보기: 칸을 더 촘촘하게 */
+.cardGridDense {
+  grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr));
+}
+
+.cardLink {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+}
+
+.cardLink > * {
+  height: 100%;
+}
+
+.cardLink:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.listFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-8);
+  padding: var(--spacing-8) 0;
+  color: var(--color-text-secondary);
+}
+
+/* 오른쪽 아래 고정 버튼 — 넓은 화면에서도 레이아웃 오른쪽 끝에 맞춘다 */
+.fab {
+  position: fixed;
+  right: max(var(--spacing-16), calc((100vw - var(--layout-max-width)) / 2));
+  bottom: var(--spacing-16);
+  z-index: 20;
+  box-shadow:
+    var(--effect-raised-brand),
+    4px 4px 0 var(--color-border-shadow-strong);
+}
+
+/* 화면 위에 잠깐 뜨는 토스트 */
+.toastLayer {
+  position: fixed;
+  top: 68px;
+  left: 12px;
+  right: 12px;
+  z-index: 90;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.toastLayer > * {
+  pointer-events: auto;
+}
+
+/* 창 안쪽 내용 여백 */
+.windowContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+  padding: var(--spacing-16) var(--spacing-12);
+}
+
+.fullWidth {
+  width: 100%;
+}

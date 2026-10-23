@@ -1,0 +1,55 @@
+/*
+ * Effect tokens — design.pen 컴포넌트의 inner/outer shadow 조합을 그대로 옮긴 값.
+ * 모든 색은 시맨틱 컬러 토큰(tokens.css)을 참조한다.
+ */
+:root {
+  /* 볼록(버튼·칩·썸 등) */
+  --effect-raised:
+    inset -1px -1px 0 var(--color-border-shadow-strong),
+    inset 1px 1px 0 var(--color-border-highlight),
+    inset -2px -2px 0 var(--color-border-shadow);
+  /* 볼록 — 브랜드 배경 */
+  --effect-raised-brand:
+    inset -1px -1px 0 var(--color-border-strong),
+    inset 1px 1px 0 var(--color-border-on-brand),
+    inset -2px -2px 0 var(--color-border-shadow-strong);
+  /* 볼록 — 에러 배경 */
+  --effect-raised-error:
+    inset -1px -1px 0 var(--color-border-strong),
+    inset 1px 1px 0 var(--color-border-highlight),
+    inset -2px -2px 0 var(--color-border-shadow-strong);
+  /* 오목(입력 필드·체크 박스·트랙 등) */
+  --effect-sunken:
+    inset 1px 1px 0 var(--color-border-shadow),
+    inset 2px 2px 0 var(--color-border-shadow-strong),
+    inset -1px -1px 0 var(--color-border-highlight);
+  /* 눌림(선택된 칩) */
+  --effect-pressed:
+    inset 1px 1px 0 var(--color-border-shadow-strong),
+    inset -1px -1px 0 var(--color-border-highlight);
+  /* 상태 표시줄 칸 */
+  --effect-inset:
+    inset 1px 1px 0 var(--color-border-shadow),
+    inset -1px -1px 0 var(--color-border-highlight);
+  /* 창(토스트·모달·메뉴) — 볼록 + 4px 그림자 */
+  --effect-window:
+    var(--effect-raised),
+    4px 4px 0 var(--color-border-shadow-strong);
+  /* 비활성 텍스트·아이콘 엠보싱 */
+  --effect-emboss: 1px 1px 0 var(--color-text-disabled-emboss);
+
+  /* 도트 패턴 (shaders/dots.glsl: spacing 2 · dot 1 · stagger 1) */
+  --pattern-dots:
+    conic-gradient(at 1px 1px, transparent 75%, var(--color-background-pattern) 0) 0 0 / 2px 4px,
+    conic-gradient(at 1px 1px, transparent 75%, var(--color-background-pattern) 0) 1px 2px / 2px 4px,
+    var(--color-background-default);
+
+  /* 페이지 배경 도트 (dots.glsl: spacing 4 · dot 1 · stagger 1) */
+  --pattern-dots-sparse:
+    conic-gradient(at 1px 1px, transparent 75%, var(--color-background-pattern) 0) 0 0 / 4px 8px,
+    conic-gradient(at 1px 1px, transparent 75%, var(--color-background-pattern) 0) 2px 4px / 4px 8px,
+    var(--color-background-default);
+
+  /* 스크림 */
+  --scrim-opacity: 0.5;
+}

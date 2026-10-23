@@ -1,0 +1,56 @@
+.track {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: flex-start;
+  width: var(--track-width);
+  height: var(--track-height);
+  padding: 2px;
+  outline: 1px solid var(--color-border-default);
+  outline-offset: -1px;
+  background: var(--color-background-input);
+  box-shadow: var(--effect-sunken);
+}
+
+.md {
+  --track-width: 40px;
+  --track-height: 20px;
+}
+
+.sm {
+  --track-width: 32px;
+  --track-height: 16px;
+}
+
+/* design.pen: md 썸 16 · sm 썸 12 */
+.thumb {
+  width: calc(var(--track-height) - 4px);
+  height: calc(var(--track-height) - 4px);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-surface);
+  box-shadow: var(--effect-raised);
+}
+
+.input:checked + .track {
+  justify-content: flex-end;
+  background: var(--color-background-brand);
+  box-shadow: none;
+}
+
+.input:disabled + .track {
+  outline-color: var(--color-border-disabled);
+  background: var(--color-background-disabled);
+  box-shadow: none;
+}
+
+.input:disabled + .track .thumb {
+  border-color: var(--color-border-disabled);
+  background: var(--color-background-disabled);
+  box-shadow: none;
+}
+
+.input:focus-visible + .track {
+  box-shadow:
+    0 0 0 3px var(--color-background-default),
+    0 0 0 5px var(--color-border-focus);
+}

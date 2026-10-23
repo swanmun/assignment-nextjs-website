@@ -1,0 +1,175 @@
+.uploader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.helper {
+  color: var(--color-text-tertiary);
+}
+
+.disabled .helper {
+  color: var(--color-text-disabled);
+}
+
+/* 드롭존 */
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 12px;
+  background: var(--color-background-input);
+  box-shadow: var(--effect-sunken);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+.guide {
+  color: var(--color-text-secondary);
+}
+
+.dragover {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+  color: var(--color-text-brand);
+}
+
+.dragover .guide {
+  color: var(--color-text-brand);
+}
+
+.error .dropzone {
+  outline: 2px solid var(--color-border-error);
+  outline-offset: -2px;
+  color: var(--color-text-error);
+}
+
+.error .guide {
+  color: var(--color-text-error);
+}
+
+.disabled .dropzone {
+  background: var(--color-background-disabled);
+  box-shadow: none;
+  outline: 1px solid var(--color-border-disabled);
+  outline-offset: -1px;
+  color: var(--color-text-disabled);
+}
+
+.disabled .guide {
+  color: var(--color-text-disabled);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 파일 아이템 */
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-elevated);
+}
+
+.itemError {
+  outline: 2px solid var(--color-border-error);
+  outline-offset: -2px;
+  border-color: transparent;
+}
+
+.thumbnail {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-border-default);
+  background: var(--pattern-dots);
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+.info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  color: var(--color-text-default);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  overflow: hidden;
+  color: var(--color-text-tertiary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemError .meta {
+  color: var(--color-text-error);
+}
+
+.progress {
+  width: 100%;
+  height: 8px;
+  padding: 1px;
+  background: var(--color-background-input);
+  box-shadow: var(--effect-sunken);
+}
+
+.progressBar {
+  height: 100%;
+  background: var(--color-background-brand);
+}
+
+.status {
+  display: inline-flex;
+  flex: none;
+}
+
+.complete {
+  color: var(--color-text-success);
+}
+
+.statusError {
+  color: var(--color-text-error);
+}
+
+.remove {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: var(--color-background-surface);
+  box-shadow: var(--effect-raised);
+  color: var(--color-text-default);
+  cursor: pointer;
+}
+
+.remove:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 1px;
+}
+
+.remove:disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}

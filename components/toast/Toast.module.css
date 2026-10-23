@@ -1,0 +1,63 @@
+/* 모바일: 화면 너비 - 좌우 마진(부모 패딩) · 데스크톱: 400px */
+.toast {
+  width: 100%;
+  max-width: 400px;
+  padding: 3px;
+  background: var(--color-background-surface);
+  box-shadow: var(--effect-window);
+}
+
+.body {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 8px 10px 14px;
+  border-left: 4px solid var(--toast-accent);
+  color: var(--color-text-default);
+}
+
+.success {
+  --toast-accent: var(--color-background-success);
+  --toast-icon: var(--color-text-success);
+}
+
+.error {
+  --toast-accent: var(--color-background-error);
+  --toast-icon: var(--color-text-error);
+}
+
+.info {
+  --toast-accent: var(--color-background-info);
+  --toast-icon: var(--color-text-info);
+}
+
+.warning {
+  --toast-accent: var(--color-background-warning);
+  --toast-icon: var(--color-text-warning);
+}
+
+.statusIcon {
+  flex: none;
+  color: var(--toast-icon);
+}
+
+.message {
+  flex: 1;
+  min-width: 0;
+  /* 아이콘(20px)과 첫 줄 높이 맞춤 */
+  padding-top: 0.5px;
+}
+
+.close {
+  display: inline-flex;
+  flex: none;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-default);
+  cursor: pointer;
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+}

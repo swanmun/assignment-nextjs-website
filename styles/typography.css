@@ -1,0 +1,78 @@
+/*
+ * Typography styles — design.pen의 text 컴포넌트(display-lg ~ label-md)와 1:1 대응.
+ * 모든 스타일에 공통 자간 -2%를 적용한다.
+ */
+
+.typo-display-lg,
+.typo-display-md,
+.typo-display-sm,
+.typo-heading-lg,
+.typo-heading-md,
+.typo-heading-sm,
+.typo-body-lg,
+.typo-body-md,
+.typo-label-lg,
+.typo-label-md {
+  font-family: var(--font-family);
+  letter-spacing: var(--font-letter-spacing);
+}
+
+.typo-display-lg {
+  font-size: var(--font-size-800);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-line-height-tight);
+}
+
+.typo-display-md {
+  font-size: var(--font-size-700);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-line-height-tight);
+}
+
+.typo-display-sm {
+  font-size: var(--font-size-600);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-line-height-tight);
+}
+
+.typo-heading-lg {
+  font-size: var(--font-size-500);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-line-height-tight);
+}
+
+.typo-heading-md {
+  font-size: var(--font-size-400);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-line-height-tight);
+}
+
+.typo-heading-sm {
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--font-line-height-tight);
+}
+
+.typo-body-lg {
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--font-line-height-normal);
+}
+
+.typo-body-md {
+  font-size: var(--font-size-200);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--font-line-height-normal);
+}
+
+.typo-label-lg {
+  font-size: var(--font-size-200);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--font-line-height-normal);
+}
+
+.typo-label-md {
+  font-size: var(--font-size-100);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--font-line-height-normal);
+}

@@ -1,0 +1,22 @@
+.note {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  min-width: 0;
+}
+
+.note svg {
+  flex: none;
+}
+
+.center {
+  justify-content: center;
+}
+
+.tertiary {
+  color: var(--color-text-tertiary);
+}
+
+.secondary {
+  color: var(--color-text-secondary);
+}

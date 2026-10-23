@@ -1,0 +1,27 @@
+.box {
+  height: 88px;
+  /* design.pen: padding 10 · 6 · 10 · 12, 오른쪽 여백 안에 10px 스크롤바 */
+  padding: 10px 6px 10px 12px;
+  align-items: stretch;
+}
+
+.textarea {
+  height: 100%;
+  resize: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-background-surface) var(--color-background-default);
+}
+
+.textarea::-webkit-scrollbar {
+  width: 10px;
+}
+
+.textarea::-webkit-scrollbar-track {
+  background: var(--color-background-default);
+}
+
+.textarea::-webkit-scrollbar-thumb {
+  background: var(--color-background-surface);
+  box-shadow: var(--effect-raised);
+}

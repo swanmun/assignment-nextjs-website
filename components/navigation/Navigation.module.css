@@ -1,0 +1,135 @@
+/* ---------- TopNavigation ---------- */
+.top {
+  width: 100%;
+  background: var(--color-background-brand);
+  color: var(--color-text-on-brand);
+}
+
+/* 넓은 화면에서는 내용만 레이아웃 최대 너비 안에 둔다. */
+.topInner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(var(--layout-max-width) + 2 * var(--spacing-16));
+  height: 56px;
+  margin: 0 auto;
+  padding: 0 4px;
+}
+
+.topTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 왼쪽 버튼이 없으면 제목이 화면 가장자리에 붙지 않도록 */
+.topTitle:first-child {
+  padding-left: 12px;
+}
+
+.topActions {
+  display: flex;
+  flex: none;
+}
+
+/* 아이콘 버튼이 아닌 요소는 오른쪽 여백을 16px로 맞춘다. */
+.topSlot {
+  display: flex;
+  flex: none;
+  align-items: center;
+  padding-right: 12px;
+}
+
+.top button:focus-visible,
+.top a:focus-visible {
+  outline-color: var(--color-border-on-brand);
+}
+
+/* ---------- BottomNavigation ---------- */
+.bottom {
+  display: flex;
+  width: 100%;
+  height: 56px;
+  border-top: 1px solid var(--color-border-default);
+  background: var(--color-background-surface);
+  box-shadow: var(--effect-raised);
+}
+
+.bottomItem {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.bottomItem[aria-current="page"] {
+  color: var(--color-text-brand);
+}
+
+.bottomItem:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -4px;
+}
+
+/* ---------- TabNavigation ---------- */
+.tabs {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  border-bottom: 1px solid var(--color-border-default);
+  background: var(--color-background-elevated);
+}
+
+.tab {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.tabLabel {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
+.indicator {
+  height: 2px;
+  background: var(--color-background-brand);
+  opacity: 0;
+}
+
+.tab[aria-selected="true"] {
+  color: var(--color-text-brand);
+}
+
+.tab[aria-selected="true"] .indicator {
+  opacity: 1;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+}

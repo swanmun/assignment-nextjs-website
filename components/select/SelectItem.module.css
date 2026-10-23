@@ -1,0 +1,51 @@
+.item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--color-background-elevated);
+  color: var(--color-text-default);
+  cursor: pointer;
+  list-style: none;
+}
+
+.sm {
+  height: 32px;
+  padding: 0 10px;
+  gap: 6px;
+}
+
+.md {
+  height: 40px;
+  padding: 0 12px;
+  gap: 8px;
+}
+
+.lg {
+  height: 48px;
+  padding: 0 14px;
+  gap: 8px;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected {
+  background: var(--color-background-brand);
+  color: var(--color-text-on-brand);
+}
+
+.disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* 키보드로 가리키는 항목 */
+.active {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+}

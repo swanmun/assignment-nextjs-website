@@ -1,0 +1,130 @@
+/* 실제 지도 연동 전까지 쓰는 일러스트 지도 (design.pen "Map" 272×180 기준 비율) */
+.map {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-default);
+  background:
+    conic-gradient(at 1px 1px, transparent 75%, var(--color-background-pattern-strong) 0) 0 0 / 2px 4px,
+    conic-gradient(at 1px 1px, transparent 75%, var(--color-background-pattern-strong) 0) 1px 2px / 2px 4px,
+    var(--color-background-default);
+}
+
+.shape {
+  position: absolute;
+  background: var(--color-background-default);
+}
+
+.diagonal {
+  left: 18%;
+  top: -10px;
+  width: 6px;
+  height: 120px;
+  transform: rotate(30deg);
+}
+
+.roadH1 {
+  left: 0;
+  top: 36px;
+  width: 55%;
+  height: 6px;
+}
+
+.roadH2 {
+  left: 59%;
+  top: 36px;
+  width: 47%;
+  height: 6px;
+}
+
+.roadH3 {
+  left: 23%;
+  top: 122px;
+  width: 32%;
+  height: 6px;
+}
+
+.roadV1 {
+  left: 55%;
+  top: 0;
+  width: 10px;
+  height: 100%;
+  border-left: 1px solid var(--color-border-default);
+  border-right: 1px solid var(--color-border-default);
+}
+
+.roadV2 {
+  left: 21%;
+  top: 0;
+  width: 6px;
+  height: 150px;
+}
+
+.roadV3 {
+  left: 87%;
+  top: 0;
+  width: 6px;
+  height: 96px;
+}
+
+.mainRoad {
+  left: 0;
+  top: 84px;
+  width: 100%;
+  height: 14px;
+  border-top: 1px solid var(--color-border-default);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.stream {
+  left: -8%;
+  top: 150px;
+  width: 116%;
+  height: 12px;
+  border-top: 1px solid var(--color-border-default);
+  border-bottom: 1px solid var(--color-border-default);
+  background: var(--color-background-subtle);
+}
+
+/* dots.glsl: spacing 4 · dot 2 · ink inverse */
+.park {
+  left: 72%;
+  top: 96px;
+  width: 34%;
+  height: 40px;
+  background:
+    conic-gradient(at 2px 2px, transparent 75%, var(--color-background-inverse) 0) 0 0 / 4px 8px,
+    conic-gradient(at 2px 2px, transparent 75%, var(--color-background-inverse) 0) 2px 4px / 4px 8px,
+    var(--color-background-default);
+}
+
+.pin {
+  position: absolute;
+  left: 57%;
+  top: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.pinLabel {
+  padding: 3px 6px;
+  background: var(--color-background-inverse);
+  color: var(--color-text-inverse-secondary);
+  white-space: nowrap;
+}
+
+.pinIcon {
+  color: var(--color-text-brand);
+}
+
+.roadLabel {
+  position: absolute;
+  left: 8px;
+  top: 100px;
+  padding: 1px 4px;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-default);
+  color: var(--color-text-default);
+}

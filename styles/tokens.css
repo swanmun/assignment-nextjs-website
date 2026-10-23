@@ -1,0 +1,185 @@
+/*
+ * Design tokens — design.pen variables 기준.
+ * Primitive 토큰만 실제 값을 가지며, Semantic 토큰은 Primitive를 참조한다.
+ */
+
+@font-face {
+  font-family: "Pretendard Variable";
+  src: url("/fonts/PretendardVariable.woff2") format("woff2-variations");
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ---------- Color · Primitive ---------- */
+  --color-brand-50: #f3f7ff;
+  --color-brand-100: #e5edff;
+  --color-brand-200: #cddcff;
+  --color-brand-300: #acc5ff;
+  --color-brand-400: #80a4ff;
+  --color-brand-500: #537eff;
+  --color-brand-600: #3c60e1;
+  --color-brand-700: #2c49bd;
+  --color-brand-800: #1a2f8f;
+  --color-brand-900: #0a0a78;
+  --color-brand-950: #050b48;
+
+  --color-neutral-50: #fffff6;
+  --color-neutral-100: #fbfaf2;
+  --color-neutral-200: #e8e6d4;
+  --color-neutral-300: #c6c3b0;
+  --color-neutral-400: #a09e8b;
+  --color-neutral-500: #7c7a68;
+  --color-neutral-600: #636151;
+  --color-neutral-700: #4a4a3c;
+  --color-neutral-800: #333327;
+  --color-neutral-900: #1e1e14;
+  --color-neutral-950: #0f0f07;
+
+  --color-amber-50: #fbf7e8;
+  --color-amber-100: #f7eccd;
+  --color-amber-200: #f2daa2;
+  --color-amber-300: #ebbf66;
+  --color-amber-400: #da9a00;
+  --color-amber-500: #b77b00;
+  --color-amber-600: #986100;
+  --color-amber-700: #7d4b00;
+  --color-amber-800: #643700;
+  --color-amber-900: #4d2600;
+  --color-amber-950: #361700;
+
+  --color-green-50: #eefbf0;
+  --color-green-100: #dbf5df;
+  --color-green-200: #bbebc4;
+  --color-green-300: #8edba0;
+  --color-green-400: #59c177;
+  --color-green-500: #1ea353;
+  --color-green-600: #008540;
+  --color-green-700: #006a32;
+  --color-green-800: #005226;
+  --color-green-900: #003d1a;
+  --color-green-950: #002910;
+
+  --color-sky-50: #edf9ff;
+  --color-sky-100: #d7f2ff;
+  --color-sky-200: #b2e5fe;
+  --color-sky-300: #7fd2f9;
+  --color-sky-400: #40b5e8;
+  --color-sky-500: #0095c9;
+  --color-sky-600: #0078a4;
+  --color-sky-700: #006085;
+  --color-sky-800: #004a68;
+  --color-sky-900: #00364f;
+  --color-sky-950: #002436;
+
+  --color-red-50: #fff4f2;
+  --color-red-100: #ffe6e3;
+  --color-red-200: #ffcfc9;
+  --color-red-300: #ffada3;
+  --color-red-400: #ff796c;
+  --color-red-500: #e9473f;
+  --color-red-600: #c41e1e;
+  --color-red-700: #a70810;
+  --color-red-800: #840007;
+  --color-red-900: #630004;
+  --color-red-950: #450002;
+
+  /* ---------- Color · Semantic / Text ---------- */
+  --color-text-default: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-500);
+  --color-text-disabled: var(--color-neutral-500);
+  --color-text-disabled-emboss: var(--color-neutral-50);
+  --color-text-inverse: var(--color-neutral-50);
+  --color-text-inverse-secondary: var(--color-neutral-200);
+  --color-text-brand: var(--color-brand-900);
+  --color-text-link: var(--color-brand-700);
+  --color-text-on-brand: var(--color-neutral-50);
+  --color-text-on-brand-secondary: var(--color-neutral-200);
+  --color-text-error: var(--color-red-600);
+  --color-text-on-error: var(--color-neutral-50);
+  --color-text-warning: var(--color-amber-700);
+  --color-text-on-warning: var(--color-neutral-900);
+  --color-text-success: var(--color-green-700);
+  --color-text-on-success: var(--color-neutral-50);
+  --color-text-info: var(--color-sky-700);
+  --color-text-on-info: var(--color-neutral-50);
+
+  /* ---------- Color · Semantic / Background ---------- */
+  --color-background-default: var(--color-neutral-200);
+  --color-background-surface: var(--color-neutral-300);
+  --color-background-subtle: var(--color-neutral-100);
+  --color-background-input: var(--color-neutral-100);
+  --color-background-elevated: var(--color-neutral-50);
+  --color-background-selected: var(--color-neutral-200);
+  --color-background-inverse: var(--color-neutral-900);
+  --color-background-disabled: var(--color-neutral-300);
+  --color-background-pattern: var(--color-neutral-300);
+  --color-background-pattern-strong: var(--color-neutral-500);
+  --color-background-brand: var(--color-brand-900);
+  --color-background-brand-hover: var(--color-brand-800);
+  --color-background-brand-subtle: var(--color-brand-100);
+  --color-background-error: var(--color-red-600);
+  --color-background-error-muted: var(--color-red-200);
+  --color-background-error-subtle: var(--color-red-50);
+  --color-background-warning: var(--color-amber-400);
+  --color-background-warning-subtle: var(--color-amber-50);
+  --color-background-success: var(--color-green-600);
+  --color-background-success-subtle: var(--color-green-50);
+  --color-background-info: var(--color-sky-600);
+  --color-background-info-subtle: var(--color-sky-50);
+
+  /* ---------- Color · Semantic / Border ---------- */
+  --color-border-default: var(--color-neutral-900);
+  --color-border-subtle: var(--color-neutral-500);
+  --color-border-strong: var(--color-neutral-950);
+  --color-border-highlight: var(--color-neutral-50);
+  --color-border-disabled: var(--color-neutral-400);
+  --color-border-shadow: var(--color-neutral-500);
+  --color-border-shadow-strong: var(--color-neutral-900);
+  --color-border-brand: var(--color-brand-900);
+  --color-border-on-brand: var(--color-neutral-200);
+  --color-border-focus: var(--color-brand-600);
+  --color-border-error: var(--color-red-600);
+  --color-border-error-subtle: var(--color-red-200);
+  --color-border-warning: var(--color-amber-600);
+  --color-border-success: var(--color-green-600);
+  --color-border-info: var(--color-sky-600);
+
+  /* ---------- Typography ---------- */
+  --font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  --font-size-100: 12px;
+  --font-size-200: 14px;
+  --font-size-300: 16px;
+  --font-size-400: 20px;
+  --font-size-500: 24px;
+  --font-size-600: 28px;
+  --font-size-700: 32px;
+  --font-size-800: 36px;
+  --font-size-900: 40px;
+
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --font-line-height-tight: 1.2;
+  --font-line-height-normal: 1.4;
+
+  /* 06-ds-foundation-typography 공통 자간 -2% */
+  --font-letter-spacing: -0.02em;
+
+  /* ---------- Spacing ---------- */
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+
+  /* Layout — 반응형 확장 한계 */
+  --layout-max-width: 1280px; /* 카드 그리드 등 넓게 확장되는 영역 */
+  --layout-content-width: 640px; /* 상세·폼처럼 한 줄 읽기 영역 */
+  --layout-card-min-width: 280px; /* 카드 그리드 한 칸의 최소 너비 */
+}

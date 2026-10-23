@@ -1,0 +1,136 @@
+/* Checkbox · Radio · Switch 공통 레이아웃: 컨트롤 + 8px + 레이블(body-md) */
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-default);
+  cursor: pointer;
+}
+
+.root:has(input:disabled) {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* 네이티브 input은 컨트롤 위에 투명하게 겹쳐 클릭·키보드·스크린리더를 그대로 쓴다. */
+.input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.box {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-size);
+  height: var(--control-size);
+  background: var(--color-background-input);
+  box-shadow: var(--effect-sunken);
+  color: var(--color-text-on-brand);
+}
+
+.md {
+  --control-size: 20px;
+  --mark-size: 12px;
+  --dash-size: 10px;
+}
+
+.sm {
+  --control-size: 16px;
+  --mark-size: 10px;
+  --dash-size: 8px;
+}
+
+.check,
+.dash {
+  display: none;
+}
+
+.check {
+  width: var(--mark-size);
+  height: var(--mark-size);
+}
+
+.dash {
+  width: var(--dash-size);
+  height: 2px;
+  background: currentColor;
+}
+
+.input:checked + .box,
+.input:indeterminate + .box {
+  background: var(--color-background-brand);
+  box-shadow: none;
+  outline: 1px solid var(--color-border-default);
+  outline-offset: -1px;
+}
+
+.input:checked:not(:indeterminate) + .box .check,
+.input:indeterminate + .box .dash {
+  display: block;
+}
+
+.error .box,
+.error .input:checked + .box,
+.error .input:indeterminate + .box {
+  outline: 2px solid var(--color-border-error);
+  outline-offset: -2px;
+}
+
+.input:disabled + .box,
+.input:disabled:checked + .box,
+.input:disabled:indeterminate + .box {
+  background: var(--color-background-disabled);
+  box-shadow: none;
+  outline: 1px solid var(--color-border-disabled);
+  outline-offset: -1px;
+  color: var(--color-text-disabled);
+}
+
+.input:focus-visible + .box {
+  box-shadow:
+    var(--effect-sunken),
+    0 0 0 2px var(--color-background-default),
+    0 0 0 4px var(--color-border-focus);
+}
+
+/* CheckboxGroup */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.legend {
+  margin-bottom: 4px;
+  padding: 0;
+  color: var(--color-text-default);
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.groupError {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-error);
+}

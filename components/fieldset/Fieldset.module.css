@@ -1,0 +1,20 @@
+/* 테두리 위에 제목이 걸친 그룹 상자 */
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+  min-width: 0;
+  margin: 0;
+  padding: 10px var(--spacing-12) var(--spacing-12);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.compact {
+  gap: var(--spacing-8);
+}
+
+.legend {
+  margin-left: -4px;
+  padding: 0 4px;
+  color: var(--color-text-default);
+}

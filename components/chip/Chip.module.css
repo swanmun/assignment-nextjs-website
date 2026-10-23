@@ -1,0 +1,58 @@
+.chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-surface);
+  box-shadow: var(--effect-raised);
+  color: var(--color-text-default);
+  font-family: inherit;
+  letter-spacing: inherit;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* 좌측 아이콘이 있으면 왼쪽 패딩만 줄인다. */
+.sm {
+  height: 24px;
+  padding: 0 12px;
+}
+
+.sm.withIcon {
+  padding-left: 6px;
+}
+
+.md {
+  height: 32px;
+  padding: 0 16px;
+}
+
+.md.withIcon {
+  padding-left: 8px;
+}
+
+.selected {
+  background: var(--color-background-brand);
+  box-shadow: var(--effect-pressed);
+  color: var(--color-text-on-brand);
+}
+
+.chip:disabled {
+  border-color: var(--color-border-disabled);
+  background: var(--color-background-disabled);
+  color: var(--color-text-disabled);
+  text-shadow: var(--effect-emboss);
+  cursor: not-allowed;
+}
+
+.chip:disabled svg {
+  filter: drop-shadow(var(--effect-emboss));
+}

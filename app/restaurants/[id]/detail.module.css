@@ -1,0 +1,75 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+.avatar {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border-default);
+  background: var(--pattern-dots);
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+.authorText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.date {
+  color: var(--color-text-tertiary);
+}
+
+/* 본문: 오목한 흰 바탕 */
+.content {
+  padding: 14px;
+  background: var(--color-background-subtle);
+  box-shadow: var(--effect-sunken);
+  color: var(--color-text-default);
+  white-space: pre-line;
+}
+
+.addressRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.addressRow > svg {
+  flex: none;
+}
+
+.addressText {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-line;
+}
+
+.ownerActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.ownerButtons {
+  display: flex;
+  gap: var(--spacing-8);
+}
+
+/* Button 기본값(flex: none)보다 우선하도록 선택자를 구체적으로 둔다 */
+.ownerButtons > a,
+.ownerButtons > button {
+  flex: 1 1 0;
+}

@@ -1,0 +1,70 @@
+.button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-default);
+  font-family: inherit;
+  letter-spacing: inherit;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.sm {
+  height: 32px;
+  padding: 0 12px;
+  gap: 6px;
+}
+
+.md {
+  height: 40px;
+  padding: 0 16px;
+  gap: 8px;
+}
+
+.lg {
+  height: 48px;
+  padding: 0 20px;
+  gap: 8px;
+}
+
+.primary {
+  background: var(--color-background-brand);
+  color: var(--color-text-on-brand);
+  box-shadow: var(--effect-raised-brand);
+}
+
+.secondary {
+  background: var(--color-background-surface);
+  color: var(--color-text-default);
+  box-shadow: var(--effect-raised);
+}
+
+.destructive {
+  background: var(--color-background-error);
+  color: var(--color-text-on-error);
+  box-shadow: var(--effect-raised-error);
+}
+
+.button:disabled {
+  background: var(--color-background-disabled);
+  color: var(--color-text-disabled);
+  box-shadow: var(--effect-raised);
+  text-shadow: var(--effect-emboss);
+  cursor: not-allowed;
+}
+
+.button:disabled svg {
+  filter: drop-shadow(var(--effect-emboss));
+}
+
+.loading {
+  cursor: progress;
+}
