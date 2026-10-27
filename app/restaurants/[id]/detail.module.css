@@ -73,3 +73,9 @@
 .ownerButtons > button {
   flex: 1 1 0;
 }
+
+/* 위치가 없을 때 지도 자리 */
+.mapEmpty {
+  border: 1px solid var(--color-border-subtle);
+  background: var(--pattern-dots);
+}

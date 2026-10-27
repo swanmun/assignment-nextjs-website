@@ -10,16 +10,24 @@ import { Window } from "@/components/window/Window";
 import page from "../../_components/page.module.css";
 import styles from "../login.module.css";
 
-export const LoginWindow = ({ error }: { error?: "cancelled" }) => {
+export type LoginError = "cancelled" | "auth";
+
+const ERROR_MESSAGE: Record<LoginError, string> = {
+  cancelled: "구글 로그인이 취소됐어요. 다시 시도해 주세요.",
+  auth: "로그인하지 못했어요. 잠시 후 다시 시도해 주세요.",
+};
+
+export const LoginWindow = ({ error }: { error?: LoginError }) => {
   const router = useRouter();
-  const [showError, setShowError] = useState(error === "cancelled");
+  const [showError, setShowError] = useState(Boolean(error));
+  const [submitting, setSubmitting] = useState(false);
 
   return (
     <>
-      {showError && (
+      {showError && error && (
         <div className={page.toastLayer}>
           <Toast type="error" onClose={() => setShowError(false)}>
-            구글 로그인이 취소됐어요. 다시 시도해 주세요.
+            {ERROR_MESSAGE[error]}
           </Toast>
         </div>
       )}
@@ -33,10 +41,12 @@ export const LoginWindow = ({ error }: { error?: "cancelled" }) => {
             </p>
           </div>
           <div className={styles.actions}>
-            {/* 구글 OAuth 연동 전까지는 로그인된 것으로 보고 마이 페이지로 이동한다. */}
-            <Button size="lg" leftIcon="user" className={page.fullWidth} onClick={() => router.push("/me")}>
-              Google 계정으로 로그인
-            </Button>
+            {/* BFF(/api/auth/signin)가 구글 동의 화면으로 리다이렉트한다. */}
+            <form action="/api/auth/signin" method="post" onSubmit={() => setSubmitting(true)}>
+              <Button type="submit" size="lg" leftIcon="user" loading={submitting} className={page.fullWidth}>
+                Google 계정으로 로그인
+              </Button>
+            </form>
             <ButtonLink href="/" variant="secondary" rightIcon="chevron-right" className={page.fullWidth}>
               로그인 없이 둘러보기
             </ButtonLink>

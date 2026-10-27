@@ -18,3 +18,16 @@
 - 상단 바·검색줄·히어로는 배경을 전체 너비로 깔고 내용만 최대 너비 안에 정렬한다.
 - 768px 이상에서는 디더링 이미지를 와이드 버전으로 바꾼다.
 - 레이아웃 너비 값을 하드코딩하지 않는다.
+
+# Supabase 연동 규칙
+
+- 모든 Supabase API 호출은 Next.js BFF(Route Handler `app/api/**/route.ts` 또는 Server Action)를 통해서만 한다.
+- 클라이언트 컴포넌트에서 Supabase 클라이언트를 직접 생성하거나 호출하지 않는다. 클라이언트는 BFF 엔드포인트만 호출한다.
+- Supabase 키·URL은 서버 전용 환경변수로 두고 `NEXT_PUBLIC_` 접두사를 붙이지 않는다.
+- 인증(소셜 로그인 포함) 세션은 BFF에서 처리하고 쿠키로 관리한다.
+- Supabase 클라이언트는 `lib/supabase/server.ts`의 `createSupabaseServerClient()`만 쓴다(`server-only`로 클라이언트 번들 유입 차단).
+- 세션 갱신·로그인 필요 경로 리다이렉트는 `proxy.ts`가 맡는다.
+- 소셜 로그인은 `POST /api/auth/signin` → 구글 → `GET /api/auth/callback`, 로그아웃은 `POST /api/auth/signout`이다. 클라이언트는 form POST로만 호출한다.
+- 로그인 사용자·프로필은 서버에서 `lib/supabase/auth.ts`의 `getCurrentUser()`로 읽는다.
+- 프로필 변경은 `PATCH /api/profile`(닉네임), `POST /api/profile/image`(사진)이다. 입력 규칙은 `lib/profile-rules.ts`를 클라이언트·BFF가 함께 쓴다.
+- 이미지는 스토리지에 `<uuidv4>.<ext>`로 올리고 테이블에는 파일 경로만 저장한다. 공개 URL은 `SUPABASE_STORAGE_URL` + 버킷 + 경로로 서버에서 만든다(`lib/supabase/storage.ts`).

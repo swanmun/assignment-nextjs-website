@@ -62,3 +62,12 @@
 .date {
   color: var(--color-text-tertiary);
 }
+
+/* 카드 위 삭제 버튼: 부모(position: relative)의 오른쪽 위에 겹친다 */
+.removeButton {
+  position: absolute;
+  top: var(--spacing-8);
+  right: var(--spacing-8);
+  z-index: 1;
+  border: 1px solid var(--color-border-default);
+}

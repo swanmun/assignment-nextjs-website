@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { MapPin } from "lucide-react";
 import { Badge } from "@/components/badge/Badge";
 import { ButtonLink } from "@/components/button/Button";
 import { PhotoCarousel } from "@/components/carousel/PhotoCarousel";
+import { Empty } from "@/components/empty/Empty";
 import { Fieldset } from "@/components/fieldset/Fieldset";
 import { MapPreview } from "@/components/map/MapPreview";
+import { Skeleton } from "@/components/skeleton/Skeleton";
 import { Panel } from "@/components/window/Window";
 import { cx } from "@/lib/cx";
-import { CURRENT_USER, findRestaurant, RESTAURANTS } from "@/lib/mock-data";
+import { PLACE_ADDRESS_PENDING } from "@/lib/place-rules";
+import { getCurrentUser } from "@/lib/supabase/auth";
+import { getPlace } from "@/lib/supabase/place";
 import page from "../../_components/page.module.css";
 import { CopyAddressButton, DetailTopNavigation, OwnerActions } from "./_components/DetailClient";
 import styles from "./detail.module.css";
@@ -17,72 +22,88 @@ type DetailProps = {
   params: Promise<{ id: string }>;
 };
 
-export function generateStaticParams() {
-  return RESTAURANTS.map((restaurant) => ({ id: restaurant.id }));
-}
-
 export async function generateMetadata({ params }: DetailProps): Promise<Metadata> {
-  const restaurant = findRestaurant((await params).id);
-  return { title: restaurant ? `${restaurant.name} · 숨은 맛집 커뮤니티` : "숨은 맛집 커뮤니티" };
+  const place = await getPlace((await params).id);
+  return { title: place ? `${place.name} · 숨은 맛집 커뮤니티` : "숨은 맛집 커뮤니티" };
 }
 
-export default async function RestaurantDetail({ params }: DetailProps) {
-  const restaurant = findRestaurant((await params).id);
-  if (!restaurant) notFound();
+const Detail = async ({ params }: DetailProps) => {
+  const { id } = await params;
+  const [place, user] = await Promise.all([getPlace(id), getCurrentUser()]);
+  if (!place) notFound();
 
-  const isMine = restaurant.author === CURRENT_USER.nickname;
-  const fullAddress = [restaurant.address, restaurant.addressDetail].filter(Boolean).join("\n");
+  const isMine = user?.id === place.authorId;
+  const located = place.address !== PLACE_ADDRESS_PENDING;
 
   return (
-    <div className={page.page}>
-      <DetailTopNavigation name={restaurant.name} />
-      <PhotoCarousel
-        photos={restaurant.photos.map((src, i) => ({
-          src,
-          wideSrc: restaurant.widePhotos?.[i],
-          alt: `${restaurant.name} 사진 ${i + 1}`,
-        }))}
-      />
+    <>
+      <DetailTopNavigation name={place.name} />
+      <PhotoCarousel photos={place.photos.map((photo, i) => ({ src: photo.url, alt: `${place.name} 사진 ${i + 1}` }))} />
       <main className={cx(page.body, page.narrow)}>
         <Panel>
           <header className={styles.header}>
-            <h2 className="typo-heading-lg">{restaurant.name}</h2>
+            <h2 className="typo-heading-lg">{place.name}</h2>
             <div className={styles.author}>
-              {/* eslint-disable-next-line @next/next/no-img-element -- 디더링 픽셀을 그대로 보여주기 위해 원본 이미지를 쓴다 */}
-              {isMine ? <img src={CURRENT_USER.avatarUrl} alt="" className={styles.avatar} /> : <span className={styles.avatar} />}
+              {/* eslint-disable-next-line @next/next/no-img-element -- 스토리지·구글 사진 URL을 그대로 보여준다 */}
+              <img src={place.authorAvatarUrl} alt="" className={styles.avatar} />
               <div className={styles.authorText}>
-                <span className="typo-label-lg">{restaurant.author}</span>
-                <span className={`${styles.date} typo-label-md`}>{restaurant.createdAt} 작성</span>
+                <span className="typo-label-lg">{place.author}</span>
+                <span className={`${styles.date} typo-label-md`}>{place.createdAt} 작성</span>
               </div>
               {isMine && <Badge tone="info">내 글</Badge>}
             </div>
           </header>
-          <p className={`${styles.content} typo-body-md`}>{restaurant.content}</p>
+          <p className={`${styles.content} typo-body-md`}>{place.content}</p>
           <Fieldset legend="주소">
             <div className={styles.addressRow}>
               <MapPin size={18} aria-hidden />
-              <p className={`${styles.addressText} typo-body-md`}>
-                {fullAddress}
-              </p>
-              <CopyAddressButton address={restaurant.address} />
+              <p className={`${styles.addressText} typo-body-md`}>{place.address}</p>
+              {located && <CopyAddressButton address={place.address} />}
             </div>
           </Fieldset>
           <Fieldset legend="지도">
-            <MapPreview label={restaurant.mapLabel} roadLabel={restaurant.roadLabel} />
-            <ButtonLink
-              href={`https://map.kakao.com/?q=${encodeURIComponent(restaurant.address)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="secondary"
-              rightIcon="chevron-right"
-              className={page.fullWidth}
-            >
-              지도 앱으로 길찾기
-            </ButtonLink>
+            {located ? (
+              <>
+                <MapPreview label={place.name} roadLabel={place.address.split(" ")[2]} />
+                <ButtonLink
+                  href={`https://map.kakao.com/?q=${encodeURIComponent(place.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="secondary"
+                  rightIcon="chevron-right"
+                  className={page.fullWidth}
+                >
+                  지도 앱으로 길찾기
+                </ButtonLink>
+              </>
+            ) : (
+              <div className={styles.mapEmpty}>
+                <Empty visual="search" title="아직 위치가 등록되지 않았어요" description="주소가 등록되면 지도에 핀이 표시돼요." />
+              </div>
+            )}
           </Fieldset>
         </Panel>
-        {isMine && <OwnerActions name={restaurant.name} />}
+        {isMine && <OwnerActions id={place.id} name={place.name} />}
       </main>
+    </>
+  );
+};
+
+export default function RestaurantDetail({ params }: DetailProps) {
+  return (
+    <div className={page.page}>
+      <Suspense
+        fallback={
+          <>
+            <DetailTopNavigation name="" />
+            <main className={cx(page.body, page.narrow)}>
+              <Skeleton shape="rect" width="100%" height={480} />
+            </main>
+          </>
+        }
+      >
+        <Detail params={params} />
+      </Suspense>
     </div>
   );
 }

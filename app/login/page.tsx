@@ -7,7 +7,7 @@ import { TopNavigation } from "@/components/navigation/TopNavigation";
 import { StatusBar } from "@/components/window/Window";
 import { cx } from "@/lib/cx";
 import page from "../_components/page.module.css";
-import { LoginWindow } from "./_components/LoginWindow";
+import { LoginWindow, type LoginError } from "./_components/LoginWindow";
 import styles from "./login.module.css";
 
 export const metadata: Metadata = { title: "로그인 · 숨은 맛집 커뮤니티" };
@@ -20,7 +20,8 @@ type LoginProps = {
 
 const LoginWindowWithError = async ({ searchParams }: LoginProps) => {
   const { error } = await searchParams;
-  return <LoginWindow error={error === "cancelled" ? "cancelled" : undefined} />;
+  const loginError: LoginError | undefined = error === "cancelled" || error === "auth" ? error : undefined;
+  return <LoginWindow error={loginError} />;
 };
 
 export default function Login({ searchParams }: LoginProps) {

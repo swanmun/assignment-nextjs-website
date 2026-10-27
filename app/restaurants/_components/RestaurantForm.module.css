@@ -1,0 +1,31 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.form .toast {
+  max-width: none;
+}
+
+.photoSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.labelRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+.counter {
+  color: var(--color-text-tertiary);
+}
+
+.success {
+  flex: none;
+  color: var(--color-text-success);
+}

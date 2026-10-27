@@ -1,6 +1,7 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { MapPin } from "lucide-react";
 import { Icon } from "@/components/icon/Icon";
+import { IconButton, type IconButtonProps } from "@/components/icon-button/IconButton";
 import { cx } from "@/lib/cx";
 import styles from "./Card.module.css";
 
@@ -54,4 +55,14 @@ export const Card = ({ title, badge, imageUrl, imageAlt = "", address, summary, 
       )}
     </div>
   </article>
+);
+
+export type CardRemoveButtonProps = Omit<IconButtonProps, "icon" | "variant">;
+
+/**
+ * 카드 오른쪽 위에 겹쳐 두는 삭제(X) 버튼.
+ * 카드를 감싼 링크 안에 넣지 말고, 카드와 같은 부모(position: relative) 안에 형제로 둔다.
+ */
+export const CardRemoveButton = ({ className, ...rest }: CardRemoveButtonProps) => (
+  <IconButton icon="close" variant="circle-neutral" className={cx(styles.removeButton, className)} {...rest} />
 );

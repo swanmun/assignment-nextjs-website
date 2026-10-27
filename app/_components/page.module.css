@@ -38,6 +38,7 @@
 }
 
 .gridItem {
+  position: relative;
   display: flex;
   min-width: 0;
 }

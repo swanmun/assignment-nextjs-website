@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Badge } from "@/components/badge/Badge";
-import { Card } from "@/components/card/Card";
+import { Card, CardRemoveButton } from "@/components/card/Card";
 import { Block, ComponentPage, Option, kit } from "../kit";
 
 const SAMPLE = {
@@ -40,6 +40,25 @@ export const Overview: Story = {
           </Option>
           <Option caption="제목 배지 — NEW" width={320}>
             <Card {...SAMPLE} badge={<Badge tone="info">NEW</Badge>} />
+          </Option>
+        </div>
+      </Block>
+      <Block
+        title="CardRemoveButton"
+        usage="내 글 목록에서 카드 오른쪽 위에 겹쳐 두는 삭제(X) 버튼. 카드를 감싼 링크 밖, position: relative 부모 안에 카드와 형제로 둡니다."
+      >
+        <div className={kit.row}>
+          <Option caption="삭제 버튼 — 내 글 목록" width={320}>
+            <div style={{ position: "relative" }}>
+              <Card {...SAMPLE} />
+              <CardRemoveButton aria-label={`${SAMPLE.title} 삭제`} />
+            </div>
+          </Option>
+          <Option caption="삭제 중 — disabled" width={320}>
+            <div style={{ position: "relative" }}>
+              <Card {...SAMPLE} />
+              <CardRemoveButton aria-label={`${SAMPLE.title} 삭제`} disabled />
+            </div>
           </Option>
         </div>
       </Block>

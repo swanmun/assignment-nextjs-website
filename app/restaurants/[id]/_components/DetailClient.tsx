@@ -6,6 +6,7 @@ import { Button, ButtonLink } from "@/components/button/Button";
 import { Modal } from "@/components/modal/Modal";
 import { TopNavigation } from "@/components/navigation/TopNavigation";
 import { Note } from "@/components/note/Note";
+import { requestJson } from "@/lib/request-json";
 import { useFlashToast } from "../../../_components/useFlashToast";
 import styles from "../detail.module.css";
 
@@ -62,15 +63,31 @@ export const CopyAddressButton = ({ address }: { address: string }) => {
 };
 
 /** 내가 쓴 글에만 보이는 수정·삭제 */
-export const OwnerActions = ({ name }: { name: string }) => {
+export const OwnerActions = ({ id, name }: { id: string; name: string }) => {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const { show, toast } = useFlashToast();
+
+  /** BFF(DELETE /api/places/:id)가 소프트삭제한다. */
+  const remove = async () => {
+    setRemoving(true);
+    try {
+      await requestJson(`/api/places/${id}`, { method: "DELETE" }, "글을 삭제하지 못했어요.");
+      router.push("/me");
+      router.refresh();
+    } catch (error) {
+      setRemoving(false);
+      setConfirming(false);
+      show("error", (error as Error).message);
+    }
+  };
 
   return (
     <div className={styles.ownerActions}>
       <Note>내가 쓴 글에만 보이는 버튼이에요</Note>
       <div className={styles.ownerButtons}>
-        <ButtonLink href="/restaurants/new" variant="secondary" leftIcon="edit">
+        <ButtonLink href={`/restaurants/${id}/edit`} variant="secondary" leftIcon="edit">
           수정
         </ButtonLink>
         <Button variant="destructive" leftIcon="delete" onClick={() => setConfirming(true)}>
@@ -82,10 +99,11 @@ export const OwnerActions = ({ name }: { name: string }) => {
         onClose={() => setConfirming(false)}
         title="글을 삭제할까요?"
         secondaryAction={{ label: "취소", onClick: () => setConfirming(false) }}
-        primaryAction={{ label: "삭제하기", onClick: () => router.push("/me") }}
+        primaryAction={{ label: "삭제하기", loading: removing, disabled: removing, onClick: remove }}
       >
-        {`'${name}' 글을 삭제하면 되돌릴 수 없어요.`}
+        {`'${name}' 글을 삭제하면 목록과 상세에서 더 이상 보이지 않아요.`}
       </Modal>
+      {toast}
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { Hero } from "@/components/hero/Hero";
 import { TopNavigation } from "@/components/navigation/TopNavigation";
 import { Skeleton } from "@/components/skeleton/Skeleton";
 import { cx } from "@/lib/cx";
-import { RESTAURANTS } from "@/lib/mock-data";
+import { listPlaces, PLACE_PAGE_SIZE } from "@/lib/supabase/place";
 import { MainList } from "./_components/MainList";
 import page from "./_components/page.module.css";
 import { SearchBar } from "./_components/SearchBar";
@@ -16,18 +16,14 @@ const readQuery = async (searchParams: SearchParams) => {
   return (Array.isArray(q) ? q[0] : q)?.trim() ?? "";
 };
 
-const matches = (keyword: string) => (value: string) => value.toLowerCase().includes(keyword.toLowerCase());
-
 const SearchBarWithQuery = async ({ searchParams }: { searchParams: SearchParams }) => (
   <SearchBar defaultValue={await readQuery(searchParams)} />
 );
 
 const Results = async ({ searchParams }: { searchParams: SearchParams }) => {
   const query = await readQuery(searchParams);
-  const restaurants = query
-    ? RESTAURANTS.filter((r) => [r.name, r.address, r.summary, r.content].some(matches(query)))
-    : RESTAURANTS;
-  return <MainList key={query} restaurants={restaurants} query={query || undefined} />;
+  const first = await listPlaces({ query: query || undefined, limit: PLACE_PAGE_SIZE });
+  return <MainList key={query} initial={first} query={query || undefined} />;
 };
 
 export default function Home({ searchParams }: { searchParams: SearchParams }) {

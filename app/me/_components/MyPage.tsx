@@ -7,24 +7,24 @@ import { Button } from "@/components/button/Button";
 import { Empty } from "@/components/empty/Empty";
 import { Fieldset } from "@/components/fieldset/Fieldset";
 import { Icon } from "@/components/icon/Icon";
+import { Modal } from "@/components/modal/Modal";
 import { Note } from "@/components/note/Note";
 import { TextField } from "@/components/text-field/TextField";
 import { StatusBar, ViewToggle, Window, WindowWell, type ListView } from "@/components/window/Window";
-import type { Restaurant, User } from "@/lib/mock-data";
+import { NICKNAME_MAX, PROFILE_IMAGE_MAX_BYTES, PROFILE_IMAGE_TYPES, validateNickname } from "@/lib/profile-rules";
+import { requestJson } from "@/lib/request-json";
+import type { Place, User } from "@/lib/types";
 import page from "../../_components/page.module.css";
 import { RestaurantGrid } from "../../_components/RestaurantGrid";
 import { useFlashToast } from "../../_components/useFlashToast";
 import styles from "../me.module.css";
 
-const NICKNAME_MIN = 2;
-const NICKNAME_MAX = 12;
-
 type MyPageProps = {
   user: User;
-  posts: Restaurant[];
+  posts: Place[];
 };
 
-export const MyPage = ({ user, posts }: MyPageProps) => {
+export const MyPage = ({ user, posts: initialPosts }: MyPageProps) => {
   const router = useRouter();
   const { show, toast } = useFlashToast();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -32,16 +32,71 @@ export const MyPage = ({ user, posts }: MyPageProps) => {
   const [nickname, setNickname] = useState(user.nickname);
   const [savedNickname, setSavedNickname] = useState(user.nickname);
   const [view, setView] = useState<ListView>("list");
+  const [savingNickname, setSavingNickname] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [posts, setPosts] = useState(initialPosts);
+  /** X를 눌러 삭제 확인 중인 글 */
+  const [confirming, setConfirming] = useState<Place | null>(null);
+  const [removingId, setRemovingId] = useState<string>();
 
   const trimmed = nickname.trim();
-  const nicknameError =
-    trimmed.length < NICKNAME_MIN || trimmed.length > NICKNAME_MAX ? `${NICKNAME_MIN}~${NICKNAME_MAX}자로 입력해 주세요.` : undefined;
-  const canSave = !nicknameError && trimmed !== savedNickname;
+  const nicknameError = validateNickname(nickname);
+  const canSave = !nicknameError && trimmed !== savedNickname && !savingNickname;
 
-  const saveNickname = () => {
+  const saveNickname = async () => {
     if (!canSave) return;
-    setSavedNickname(trimmed);
-    show("success", "닉네임을 바꿨어요.");
+    setSavingNickname(true);
+    try {
+      const result = await requestJson<{ nickname: string }>(
+        "/api/profile",
+        { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nickname: trimmed }) },
+        "닉네임을 바꾸지 못했어요.",
+      );
+      setSavedNickname(result.nickname);
+      setNickname(result.nickname);
+      show("success", "닉네임을 바꿨어요.");
+    } catch (error) {
+      show("error", (error as Error).message);
+    } finally {
+      setSavingNickname(false);
+    }
+  };
+
+  const uploadAvatar = async (file: File) => {
+    if (!(PROFILE_IMAGE_TYPES as readonly string[]).includes(file.type)) return show("error", "PNG·JPG 사진만 올릴 수 있어요.");
+    if (file.size > PROFILE_IMAGE_MAX_BYTES) return show("error", "5MB 이하 사진만 올릴 수 있어요.");
+
+    const formData = new FormData();
+    formData.append("file", file);
+    setUploadingAvatar(true);
+    try {
+      const result = await requestJson<{ avatarUrl: string }>(
+        "/api/profile/image",
+        { method: "POST", body: formData },
+        "사진을 바꾸지 못했어요.",
+      );
+      setAvatarUrl(result.avatarUrl);
+      show("success", "프로필 사진을 바꿨어요.");
+    } catch (error) {
+      show("error", (error as Error).message);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  /** BFF(DELETE /api/places/:id)가 소프트삭제한다. 성공하면 목록에서 바로 뺀다. */
+  const removePost = async (post: Place) => {
+    setRemovingId(post.id);
+    try {
+      await requestJson(`/api/places/${post.id}`, { method: "DELETE" }, "글을 삭제하지 못했어요.");
+      setPosts((prev) => prev.filter((p) => p.id !== post.id));
+      setConfirming(null);
+      show("success", "글을 삭제했어요.");
+    } catch (error) {
+      show("error", (error as Error).message);
+    } finally {
+      setRemovingId(undefined);
+    }
   };
 
   return (
@@ -51,14 +106,21 @@ export const MyPage = ({ user, posts }: MyPageProps) => {
         <div className={page.windowContent}>
           <div className={styles.profileLayout}>
             <div className={styles.profileRow}>
-              {/* eslint-disable-next-line @next/next/no-img-element -- 업로드 미리보기(blob URL)도 그대로 보여준다 */}
+              {/* eslint-disable-next-line @next/next/no-img-element -- 스토리지·구글 사진 URL을 그대로 보여준다 */}
               <img src={avatarUrl} alt={`${savedNickname} 프로필 사진`} className={styles.avatar} />
               <div className={styles.profileInfo}>
                 <div className={styles.nameBlock}>
                   <h2 className="typo-heading-md">{savedNickname}</h2>
                   <span className={`${styles.email} typo-label-md`}>{user.email}</span>
                 </div>
-                <Button variant="secondary" size="sm" leftIcon="image" onClick={() => fileRef.current?.click()}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  leftIcon="image"
+                  loading={uploadingAvatar}
+                  disabled={uploadingAvatar}
+                  onClick={() => fileRef.current?.click()}
+                >
                   사진 바꾸기
                 </Button>
                 <input
@@ -68,7 +130,8 @@ export const MyPage = ({ user, posts }: MyPageProps) => {
                   hidden
                   onChange={(event) => {
                     const file = event.target.files?.[0];
-                    if (file) setAvatarUrl(URL.createObjectURL(file));
+                    event.target.value = "";
+                    if (file) uploadAvatar(file);
                   }}
                 />
               </div>
@@ -98,7 +161,7 @@ export const MyPage = ({ user, posts }: MyPageProps) => {
                   }
                   className={styles.nicknameField}
                 />
-                <Button type="submit" variant="secondary" disabled={!canSave}>
+                <Button type="submit" variant="secondary" loading={savingNickname} disabled={!canSave}>
                   저장
                 </Button>
               </form>
@@ -133,7 +196,7 @@ export const MyPage = ({ user, posts }: MyPageProps) => {
             />
           ) : (
             <>
-              <RestaurantGrid restaurants={posts} view={view} />
+              <RestaurantGrid restaurants={posts} view={view} onRemove={setConfirming} removingId={removingId} />
               <p className={`${page.listFooter} typo-label-md`}>
                 <Icon name="check" size={16} />
                 마지막 맛집이에요
@@ -143,9 +206,26 @@ export const MyPage = ({ user, posts }: MyPageProps) => {
         </WindowWell>
       </Window>
 
-      <Button variant="secondary" leftIcon="logout" className={page.fullWidth} onClick={() => router.push("/login")}>
-        로그아웃
-      </Button>
+      <Modal
+        open={confirming !== null}
+        onClose={() => setConfirming(null)}
+        title="글을 삭제할까요?"
+        secondaryAction={{ label: "취소", onClick: () => setConfirming(null) }}
+        primaryAction={{
+          label: "삭제하기",
+          loading: removingId !== undefined,
+          disabled: removingId !== undefined,
+          onClick: () => confirming && removePost(confirming),
+        }}
+      >
+        {confirming && `'${confirming.name}' 글을 삭제하면 목록과 상세에서 더 이상 보이지 않아요.`}
+      </Modal>
+
+      <form action="/api/auth/signout" method="post">
+        <Button type="submit" variant="secondary" leftIcon="logout" className={page.fullWidth}>
+          로그아웃
+        </Button>
+      </form>
     </>
   );
 };
