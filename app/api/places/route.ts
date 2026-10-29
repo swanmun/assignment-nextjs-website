@@ -1,5 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { listPlaces, PLACE_PAGE_SIZE, readPlaceForm, removePlaceImages, uploadPlaceImages } from "@/lib/supabase/place";
+import {
+  listPlaces,
+  locationColumns,
+  PLACE_PAGE_SIZE,
+  readPlaceForm,
+  removePlaceImages,
+  uploadPlaceImages,
+} from "@/lib/supabase/place";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /** 맛집 목록 (무한 스크롤). ?q=검색어&cursor=이전 묶음의 nextCursor → PlacePage */
@@ -19,8 +26,8 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * 맛집 등록. multipart name, content, images[] → 201 { id }
- * 주소는 아직 받지 않는다. DB 기본값("등록 대기중")으로 저장된다.
+ * 맛집 등록. multipart name, content, images[], (address, jibunAddress, latitude, longitude) → 201 { id }
+ * 위치는 장소 검색으로 골랐을 때만 온다. 없으면 주소는 기본값("등록 대기중")으로 저장된다.
  * 사진은 place-image 버킷에 <uuidv4>.<ext>로 올리고 place_image 테이블에 경로만 저장한다.
  */
 export async function POST(request: NextRequest) {
@@ -34,14 +41,14 @@ export async function POST(request: NextRequest) {
   if (!formData) return NextResponse.json({ message: "입력값을 읽지 못했어요." }, { status: 400 });
   const form = readPlaceForm(formData);
   if ("message" in form) return NextResponse.json({ message: form.message }, { status: 400 });
-  const { name, content, files } = form.input;
+  const { name, content, location, files } = form.input;
 
   const paths = await uploadPlaceImages(supabase, files);
   if (!paths) return NextResponse.json({ message: "사진을 올리지 못했어요." }, { status: 500 });
 
   const { data: place, error: placeError } = await supabase
     .from("place")
-    .insert({ name, content, user_id: user.id })
+    .insert({ name, content, ...locationColumns(location), user_id: user.id })
     .select("id")
     .single();
   if (placeError) {

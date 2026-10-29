@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   getPlace,
   getPlaceOwnership,
+  locationColumns,
   readPlaceForm,
   removePlaceImages,
   sortImages,
@@ -23,7 +24,8 @@ export async function GET(_request: NextRequest, { params }: Context) {
 }
 
 /**
- * 맛집 수정 (작성자 본인만). multipart name, content, keepImageIds[], images[] → { id }
+ * 맛집 수정 (작성자 본인만). multipart name, content, keepImageIds[], images[], (address, jibunAddress, latitude, longitude) → { id }
+ * 위치가 없으면 주소를 기본값으로 되돌린다.
  * keepImageIds에 없는 기존 사진은 지우고, 새 사진은 기존 사진 뒤에 붙인다.
  */
 export async function PATCH(request: NextRequest, { params }: Context) {
@@ -47,7 +49,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
 
   const form = readPlaceForm(formData, kept.length);
   if ("message" in form) return NextResponse.json({ message: form.message }, { status: 400 });
-  const { name, content, files } = form.input;
+  const { name, content, location, files } = form.input;
 
   const paths = await uploadPlaceImages(supabase, files);
   if (!paths) return NextResponse.json({ message: "사진을 올리지 못했어요." }, { status: 500 });
@@ -55,7 +57,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   // RLS에 막히면 에러 없이 0행이 바뀌므로 바뀐 행 수로 확인한다.
   const { count: updated, error: placeError } = await supabase
     .from("place")
-    .update({ name, content }, { count: "exact" })
+    .update({ name, content, ...locationColumns(location) }, { count: "exact" })
     .eq("id", id)
     .eq("user_id", user.id)
     .is("deleted_at", null);

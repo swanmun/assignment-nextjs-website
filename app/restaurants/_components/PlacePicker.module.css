@@ -1,0 +1,66 @@
+/* 맛집 등록 위에 덮는 전체 화면 (design.pen "07 장소 등록") */
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--pattern-dots-sparse);
+}
+
+/* 검색줄: 바탕은 전체 너비, 내용은 읽기 영역 너비 */
+.searchBar {
+  border-bottom: 1px solid var(--color-border-default);
+  background: var(--color-background-surface);
+}
+
+.searchForm {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  max-width: calc(var(--layout-content-width) + 2 * var(--spacing-16));
+  margin: 0 auto;
+  padding: var(--spacing-8) var(--spacing-16);
+}
+
+.searchField {
+  flex: 1;
+}
+
+/* 장소 화면 검색창: 누르면 검색 화면으로 넘어간다. */
+.searchTrigger input {
+  cursor: pointer;
+}
+
+.clear {
+  display: inline-flex;
+  flex: none;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+}
+
+.clear:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+}
+
+.addressRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  color: var(--color-text-default);
+}
+
+.addressRow > svg {
+  flex: none;
+}
+
+.addressText {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-line;
+}

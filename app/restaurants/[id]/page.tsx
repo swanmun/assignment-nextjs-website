@@ -7,11 +7,13 @@ import { ButtonLink } from "@/components/button/Button";
 import { PhotoCarousel } from "@/components/carousel/PhotoCarousel";
 import { Empty } from "@/components/empty/Empty";
 import { Fieldset } from "@/components/fieldset/Fieldset";
+import { MAP_IMAGE_HEIGHT, MapImage } from "@/components/map/MapImage";
 import { MapPreview } from "@/components/map/MapPreview";
 import { Skeleton } from "@/components/skeleton/Skeleton";
 import { Panel } from "@/components/window/Window";
 import { cx } from "@/lib/cx";
-import { PLACE_ADDRESS_PENDING } from "@/lib/place-rules";
+import { mapImageUrl, naverMapUrl } from "@/lib/map-url";
+import { shortJibun } from "@/lib/place-rules";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { getPlace } from "@/lib/supabase/place";
 import page from "../../_components/page.module.css";
@@ -33,12 +35,35 @@ const Detail = async ({ params }: DetailProps) => {
   if (!place) notFound();
 
   const isMine = user?.id === place.authorId;
-  const located = place.address !== PLACE_ADDRESS_PENDING;
+  const { location } = place;
+  // 지도를 못 불러오면 일러스트 지도로 대신한다.
+  const fallbackMap = <MapPreview label={place.name} roadLabel={place.address.split(" ")[2]} />;
 
   return (
     <>
       <DetailTopNavigation name={place.name} />
       <PhotoCarousel photos={place.photos.map((photo, i) => ({ src: photo.url, alt: `${place.name} 사진 ${i + 1}` }))} />
+      {location && (
+        <MapImage
+          src={mapImageUrl(location, 360, MAP_IMAGE_HEIGHT.sm)}
+          wideSrc={mapImageUrl(location, 640, MAP_IMAGE_HEIGHT.sm)}
+          alt={`${place.name} 위치 미니 지도`}
+          size="sm"
+          bleed
+          fallback={fallbackMap}
+          action={
+            <ButtonLink
+              href={naverMapUrl(location.address)}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="secondary"
+              rightIcon="chevron-right"
+            >
+              크게 보기
+            </ButtonLink>
+          }
+        />
+      )}
       <main className={cx(page.body, page.narrow)}>
         <Panel>
           <header className={styles.header}>
@@ -57,14 +82,22 @@ const Detail = async ({ params }: DetailProps) => {
           <Fieldset legend="주소">
             <div className={styles.addressRow}>
               <MapPin size={18} aria-hidden />
-              <p className={`${styles.addressText} typo-body-md`}>{place.address}</p>
-              {located && <CopyAddressButton address={place.address} />}
+              <p className={`${styles.addressText} typo-body-md`}>
+                {place.address}
+                {location?.jibunAddress && `\n(${shortJibun(location.jibunAddress)})`}
+              </p>
+              {location && <CopyAddressButton address={place.address} />}
             </div>
           </Fieldset>
           <Fieldset legend="지도">
-            {located ? (
+            {location ? (
               <>
-                <MapPreview label={place.name} roadLabel={place.address.split(" ")[2]} />
+                <MapImage
+                  src={mapImageUrl(location, 360, MAP_IMAGE_HEIGHT.md)}
+                  wideSrc={mapImageUrl(location, 640, MAP_IMAGE_HEIGHT.md)}
+                  alt={`${place.name} 위치 지도`}
+                  fallback={fallbackMap}
+                />
                 <ButtonLink
                   href={`https://map.kakao.com/?q=${encodeURIComponent(place.address)}`}
                   target="_blank"

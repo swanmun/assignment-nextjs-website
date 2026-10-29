@@ -10,7 +10,7 @@ export type MapPreviewProps = {
   className?: string;
 };
 
-/** 실제 지도 연동 전까지 위치를 보여주는 일러스트 지도. 핀은 항상 가운데에 둔다. */
+/** 위치를 보여주는 일러스트 지도. 실제 지도(MapImage)를 불러오지 못할 때 대신 쓴다. 핀은 항상 가운데에 둔다. */
 export const MapPreview = ({ label, roadLabel, className }: MapPreviewProps) => (
   <div className={cx(styles.map, className)} role="img" aria-label={`${label} 위치 지도`}>
     <span className={cx(styles.shape, styles.diagonal)} />

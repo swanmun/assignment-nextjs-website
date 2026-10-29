@@ -1,10 +1,13 @@
 import "server-only";
 
 import {
+  PLACE_ADDRESS_PENDING,
   validatePlaceContent,
   validatePlaceImage,
   validatePlaceImageCount,
+  validatePlaceLocation,
   validatePlaceName,
+  type PlaceLocation,
 } from "@/lib/place-rules";
 import type { Place, PlacePage } from "@/lib/types";
 import { DEFAULT_AVATAR } from "./auth";
@@ -17,7 +20,8 @@ type ServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 export const PLACE_PAGE_SIZE = 12;
 const SUMMARY_LENGTH = 60;
 
-const PLACE_COLUMNS = "id, created_at, name, content, address, user_id, place_image(id, image_path, sort_order)";
+const PLACE_COLUMNS =
+  "id, created_at, name, content, address, jibun_address, latitude, longitude, user_id, place_image(id, image_path, sort_order)";
 
 type PlaceImageRow = { id: string; image_path: string; sort_order: number };
 type PlaceRow = {
@@ -26,6 +30,9 @@ type PlaceRow = {
   name: string;
   content: string;
   address: string;
+  jibun_address: string | null;
+  latitude: number | null;
+  longitude: number | null;
   user_id: string;
   place_image: PlaceImageRow[];
 };
@@ -53,6 +60,10 @@ const toPlace = (row: PlaceRow, profile: ProfileRow | undefined): Place => {
     content: row.content,
     summary: summarize(row.content),
     address: row.address,
+    location:
+      row.latitude !== null && row.longitude !== null
+        ? { address: row.address, jibunAddress: row.jibun_address, latitude: row.latitude, longitude: row.longitude }
+        : null,
     authorId: row.user_id,
     author: profile?.nickname ?? "이웃",
     authorAvatarUrl: profile?.image_path ? profileImageUrl(profile.image_path) : DEFAULT_AVATAR,
@@ -143,10 +154,19 @@ export async function getPlaceOwnership(supabase: ServerClient, id: string) {
   return data as Pick<PlaceRow, "user_id" | "place_image"> | null;
 }
 
-export type PlaceInput = { name: string; content: string; files: File[] };
+export type PlaceInput = { name: string; content: string; location: PlaceLocation | null; files: File[] };
+
+/** place 테이블에 쓸 위치 컬럼. 위치가 없으면 주소를 기본값으로 되돌린다. */
+export const locationColumns = (location: PlaceLocation | null) => ({
+  address: location?.address ?? PLACE_ADDRESS_PENDING,
+  jibun_address: location?.jibunAddress ?? null,
+  latitude: location?.latitude ?? null,
+  longitude: location?.longitude ?? null,
+});
 
 /**
- * multipart 본문(name, content, images[])을 읽어 검증한다.
+ * multipart 본문(name, content, images[], 위치)을 읽어 검증한다.
+ * 위치(address, jibunAddress, latitude, longitude)는 장소 검색으로 골랐을 때만 온다.
  * keptImageCount: 수정할 때 남겨 둘 기존 사진 수 (사진 장수 규칙에 함께 센다)
  */
 export function readPlaceForm(formData: FormData, keptImageCount = 0): { input: PlaceInput } | { message: string } {
@@ -157,13 +177,23 @@ export function readPlaceForm(formData: FormData, keptImageCount = 0): { input: 
   const name = text("name");
   const content = text("content");
   const files = formData.getAll("images").filter((value): value is File => value instanceof File && value.size > 0);
+  const address = text("address");
+  const location: PlaceLocation | null = address
+    ? {
+        address,
+        jibunAddress: text("jibunAddress") || null,
+        latitude: Number(text("latitude") || NaN),
+        longitude: Number(text("longitude") || NaN),
+      }
+    : null;
 
   const message =
     validatePlaceName(name) ??
     validatePlaceContent(content) ??
+    (location ? validatePlaceLocation(location) : undefined) ??
     validatePlaceImageCount(keptImageCount + files.length) ??
     files.map(validatePlaceImage).find(Boolean);
-  return message ? { message } : { input: { name, content, files } };
+  return message ? { message } : { input: { name, content, location, files } };
 }
 
 /** 사진을 place-image 버킷에 <uuidv4>.<ext>로 올리고 경로를 돌려준다. 하나라도 실패하면 올린 것을 지우고 null */

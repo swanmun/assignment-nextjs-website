@@ -32,7 +32,9 @@ const Edit = async ({ params }: EditRestaurantProps) => {
         rightSlot={<Badge tone="warning">수정 중</Badge>}
       />
       <main className={cx(page.body, page.narrow)}>
-        <RestaurantForm place={{ id: place.id, name: place.name, content: place.content, photos: place.photos }} />
+        <RestaurantForm
+          place={{ id: place.id, name: place.name, content: place.content, photos: place.photos, location: place.location }}
+        />
       </main>
     </>
   );

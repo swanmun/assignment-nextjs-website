@@ -17,7 +17,7 @@ export const Overview: Story = {
   render: () => (
     <ComponentPage
       title="Map Preview"
-      description="실제 지도 연동 전까지 위치를 보여주는 일러스트 지도(높이 180px). 도로·하천·공원을 도트 패턴으로 그리고, 가운데 핀 위에 이름표(label-md)를 답니다."
+      description="위치를 보여주는 일러스트 지도(높이 180px). 실제 지도(MapImage)를 불러오지 못할 때 fallback으로 씁니다. 도로·하천·공원을 도트 패턴으로 그리고, 가운데 핀 위에 이름표(label-md)를 답니다."
     >
       <Block title="Options">
         <div className={kit.row}>

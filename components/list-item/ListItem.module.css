@@ -1,0 +1,76 @@
+/* design.pen "Result Row" */
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  width: 100%;
+  padding: var(--spacing-8) var(--spacing-12);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-background-selected);
+  color: var(--color-text-default);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover:not(:disabled) {
+  border-color: var(--color-border-default);
+}
+
+.item:active:not(:disabled) {
+  box-shadow: var(--effect-pressed);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 1px;
+}
+
+.item:disabled {
+  border-color: var(--color-border-disabled);
+  background: var(--color-background-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.texts {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  min-width: 0;
+}
+
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  flex: none;
+  color: var(--color-text-tertiary);
+}
+
+.description {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item:disabled .meta,
+.item:disabled .description {
+  color: inherit;
+}
+
+.chevron {
+  flex: none;
+  color: var(--color-text-tertiary);
+}

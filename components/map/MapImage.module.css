@@ -1,0 +1,60 @@
+/* 지도 이미지 (design.pen "Map" 328×360 · 272×180, "Mini Map" 360×140) */
+.map {
+  position: relative;
+  overflow: hidden;
+  background: var(--pattern-dots);
+}
+
+.framed {
+  border: 1px solid var(--color-border-default);
+}
+
+.sm {
+  height: 140px;
+}
+
+.md {
+  height: 180px;
+}
+
+.lg {
+  height: 360px;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 대신 보여줄 일러스트는 지도 칸 세로 가운데에 두고(넘치면 위아래를 자른다), 테두리는 지도 칸의 것을 쓴다. */
+.fallback {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.fallback > * {
+  flex: none;
+  border: none;
+}
+
+.action {
+  position: absolute;
+  right: var(--spacing-12);
+  bottom: var(--spacing-12);
+}
+
+/* 가로 전체 띠: 바탕은 전체 너비, 지도는 읽기 영역 너비 */
+.strip {
+  border-top: 1px solid var(--color-border-default);
+  border-bottom: 1px solid var(--color-border-default);
+  background: var(--pattern-dots);
+}
+
+.strip > .map {
+  max-width: var(--layout-content-width);
+  margin: 0 auto;
+}

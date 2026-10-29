@@ -21,6 +21,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // 정적 파일·이미지는 건너뛴다.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2)$).*)"],
+  // 정적 파일·이미지·지도 이미지(세션이 필요 없다)는 건너뛴다.
+  matcher: ["/((?!_next/static|_next/image|api/map|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2)$).*)"],
 };

@@ -21,8 +21,9 @@
 | 페이지 | 경로 | 시안 상태 확인 |
 |---|---|---|
 | 메인 | `/` | `/?q=칼국수` (검색) |
-| 상세 | `/restaurants/[id]` | `/restaurants/oryu-kalguksu` |
+| 상세 | `/restaurants/[id]` | 위치가 있으면 미니 지도 · 지도 칸에 실제 지도 |
 | 등록 | `/restaurants/new` | `?preview=error` (입력 오류) |
+| 장소 등록 | 등록 화면 위 전체 화면 (`장소 입력하기`) | `/restaurants/new?preview=place-results` (검색 결과) · `place-empty` (결과 없음 · 직접 입력) · `place-location` (위치 지정) |
 | 로그인 | `/login` | `?error=cancelled` (로그인 실패) |
 | 마이 | `/me` | `?empty=1` (쓴 글 없음) |
 
@@ -77,9 +78,12 @@ Storybook을 디자인의 기준(SSOT)으로 둡니다. 자세한 규칙은 [`CL
 - 색·타이포·간격·이펙트는 토큰만 쓰고 값을 하드코딩하지 않습니다.
 - Storybook에 없는 UI가 필요하면 컴포넌트와 스토리를 먼저 추가합니다.
 
-## 아직 구현하지 않은 것
+## 장소 검색 · 지도
 
-백엔드 없이 화면만 구현한 상태라, 아래 기능은 목업으로 동작합니다.
-
-- 맛집 데이터 (5건 고정), 구글 로그인, 사진 업로드, 주소 검색, 글 삭제
-- 지도는 실제 지도 대신 일러스트로 보여 줍니다.
+- 장소 등록 흐름: `장소 입력하기` → 장소 화면(검색창 · 지도 · 지번 주소) → 검색창을 누르면 검색 화면 → 결과를 고르면 장소 화면으로 돌아와 검색어는 검색창에, 지번 주소는 주소 칸에 넣고 지도 가운데를 고른 장소로 옮깁니다. 결과가 없으면 장소명을 직접 입력하고, 돌아와도 지번 주소·좌표는 기본값(등록 대기중 · 서울시청)을 그대로 둡니다.
+- 장소 검색: NCP API Hub 지역 검색(`naverapihub.apigw.ntruss.com/search/v1/local`)을 BFF(`GET /api/places/search?q=`)로 부릅니다. 결과는 최대 5곳이고, `mapx`·`mapy`(WGS84 × 10^7)는 lng·lat으로 바꿔 씁니다.
+- 지도: 네이버 클라우드 플랫폼 Static Map을 BFF(`GET /api/map?lat=&lng=&w=&h=`)로 받아 이미지로 보여 줍니다. 키가 없거나 불러오지 못하면 일러스트 지도로 대신합니다.
+- 위치 지정: 장소 화면에 네이버 지도 JavaScript API v3(Dynamic Map)를 띄웁니다. 핀은 지도 가운데에 고정되고, 지도를 움직여 위치를 고칩니다(기본 위치 서울시청). `이 위치로 등록하기`를 누르면 핀 좌표가 저장되고 주소는 검색된 주소를 그대로 씁니다. 직접 입력한 장소는 주소 없이 등록됩니다(나중에 리버스 지오코딩으로 지도에서 고르게 할 예정).
+- 키는 서버 전용 환경변수(`NAVER_SEARCH_CLIENT_ID`, `NAVER_SEARCH_CLIENT_SECRET`, `NCP_MAP_KEY_ID`, `NCP_MAP_KEY`)에 둡니다. 브라우저 SDK가 쓰는 지도 Client ID만 `NEXT_PUBLIC_NCP_MAP_KEY_ID`로 둡니다(공개 값, NCP 콘솔의 Web 서비스 URL 등록으로 제한). `.env.example`을 참고하세요.
+- 검색 결과가 없으면 장소명만 직접 입력해 주소 없이 등록할 수 있습니다.
+- 위치(지번 주소·좌표) 컬럼은 `supabase/migrations/20261029000000_place_location.sql`로 추가합니다.

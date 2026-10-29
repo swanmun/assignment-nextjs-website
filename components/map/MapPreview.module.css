@@ -1,4 +1,4 @@
-/* 실제 지도 연동 전까지 쓰는 일러스트 지도 (design.pen "Map" 272×180 기준 비율) */
+/* 실제 지도(MapImage)를 불러오지 못할 때 쓰는 일러스트 지도 (design.pen "Map" 272×180 기준 비율) */
 .map {
   position: relative;
   height: 180px;

@@ -29,3 +29,30 @@
   flex: none;
   color: var(--color-text-success);
 }
+
+.addressSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+.addressRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-8);
+}
+
+.addressField {
+  flex: 1;
+}
+
+/* 입력 박스 높이에 맞춘다: 레이블(label-lg 행 높이 20px) + 레이블 간격(6px) */
+.addressRow > .addressSearch {
+  margin-top: 26px;
+}
+
+/* 위치가 없을 때 지도 자리 */
+.mapEmpty {
+  border: 1px solid var(--color-border-subtle);
+  background: var(--pattern-dots);
+}
