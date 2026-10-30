@@ -11,8 +11,16 @@ import { Modal } from "@/components/modal/Modal";
 import { Note } from "@/components/note/Note";
 import { TextField } from "@/components/text-field/TextField";
 import { StatusBar, ViewToggle, Window, WindowWell, type ListView } from "@/components/window/Window";
-import { NICKNAME_MAX, PROFILE_IMAGE_MAX_BYTES, PROFILE_IMAGE_TYPES, validateNickname } from "@/lib/profile-rules";
+import {
+  NICKNAME_MAX,
+  PROFILE_IMAGE_MAX_BYTES,
+  PROFILE_IMAGE_TYPES,
+  PROFILE_IMAGE_UPLOAD_BYTES,
+  PROFILE_IMAGE_UPLOAD_SIDE,
+  validateNickname,
+} from "@/lib/profile-rules";
 import { requestJson } from "@/lib/request-json";
+import { shrinkImage } from "@/lib/shrink-image";
 import type { Place, User } from "@/lib/types";
 import page from "../../_components/page.module.css";
 import { RestaurantGrid } from "../../_components/RestaurantGrid";
@@ -66,10 +74,10 @@ export const MyPage = ({ user, posts: initialPosts }: MyPageProps) => {
     if (!(PROFILE_IMAGE_TYPES as readonly string[]).includes(file.type)) return show("error", "PNG·JPG 사진만 올릴 수 있어요.");
     if (file.size > PROFILE_IMAGE_MAX_BYTES) return show("error", "5MB 이하 사진만 올릴 수 있어요.");
 
-    const formData = new FormData();
-    formData.append("file", file);
     setUploadingAvatar(true);
     try {
+      const formData = new FormData();
+      formData.append("file", await shrinkImage(file, { maxSide: PROFILE_IMAGE_UPLOAD_SIDE, maxBytes: PROFILE_IMAGE_UPLOAD_BYTES }));
       const result = await requestJson<{ avatarUrl: string }>(
         "/api/profile/image",
         { method: "POST", body: formData },

@@ -4,6 +4,9 @@ export const NICKNAME_MAX = 12;
 
 export const PROFILE_IMAGE_TYPES = ["image/png", "image/jpeg"] as const;
 export const PROFILE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+/** 보내기 전에 브라우저에서 줄이는 크기 (화면에는 80px로 보인다) */
+export const PROFILE_IMAGE_UPLOAD_SIDE = 480;
+export const PROFILE_IMAGE_UPLOAD_BYTES = 512 * 1024;
 
 /** 문제가 있으면 안내 문구, 없으면 undefined */
 export const validateNickname = (nickname: string) => {

@@ -20,6 +20,8 @@ import {
   PLACE_CONTENT_MIN,
   PLACE_IMAGE_MAX,
   PLACE_IMAGE_MAX_BYTES,
+  PLACE_IMAGE_UPLOAD_BYTES,
+  PLACE_IMAGE_UPLOAD_SIDE,
   PLACE_NAME_MAX,
   shortJibun,
   validatePlaceContent,
@@ -29,6 +31,7 @@ import {
   type PlaceLocation,
 } from "@/lib/place-rules";
 import { requestJson } from "@/lib/request-json";
+import { shrinkImage } from "@/lib/shrink-image";
 import type { PlacePhoto, PlaceSearchItem } from "@/lib/types";
 import page from "../../_components/page.module.css";
 import { PlacePicker, type PlacePickerPreview } from "./PlacePicker";
@@ -232,23 +235,25 @@ export const RestaurantForm = ({ place, preview }: RestaurantFormProps) => {
     setServerError(undefined);
     if (!isValid || submitting) return;
 
-    // 기존 사진은 남길 id만, 새 사진은 파일을 보낸다. 서버가 같은 규칙으로 다시 검증한다.
-    const body = new FormData();
-    body.append("name", form.name.trim());
-    body.append("content", form.content.trim());
-    for (const photo of form.photos) {
-      if (photo.existingId) body.append("keepImageIds", photo.existingId);
-      else if (photo.file) body.append("images", photo.file);
-    }
-    if (form.location) {
-      body.append("address", form.location.address);
-      if (form.location.jibunAddress) body.append("jibunAddress", form.location.jibunAddress);
-      body.append("latitude", String(form.location.latitude));
-      body.append("longitude", String(form.location.longitude));
-    }
-
     setSubmitting(true);
     try {
+      // 기존 사진은 남길 id만, 새 사진은 브라우저에서 줄인 파일을 보낸다. 서버가 같은 규칙으로 다시 검증한다.
+      const body = new FormData();
+      body.append("name", form.name.trim());
+      body.append("content", form.content.trim());
+      for (const photo of form.photos) {
+        if (photo.existingId) body.append("keepImageIds", photo.existingId);
+        else if (photo.file) {
+          body.append("images", await shrinkImage(photo.file, { maxSide: PLACE_IMAGE_UPLOAD_SIDE, maxBytes: PLACE_IMAGE_UPLOAD_BYTES }));
+        }
+      }
+      if (form.location) {
+        body.append("address", form.location.address);
+        if (form.location.jibunAddress) body.append("jibunAddress", form.location.jibunAddress);
+        body.append("latitude", String(form.location.latitude));
+        body.append("longitude", String(form.location.longitude));
+      }
+
       const { id } = await requestJson<{ id: string }>(
         place ? `/api/places/${place.id}` : "/api/places",
         { method: place ? "PATCH" : "POST", body },

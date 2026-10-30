@@ -7,6 +7,9 @@ export const PLACE_IMAGE_MIN = 1;
 export const PLACE_IMAGE_MAX = 5;
 export const PLACE_IMAGE_TYPES = ["image/png", "image/jpeg"] as const;
 export const PLACE_IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+/** 보내기 전에 브라우저에서 줄이는 크기. Vercel 함수 요청 본문 한도(4.5MB) 안에 최대 5장이 들어가게 한다. */
+export const PLACE_IMAGE_UPLOAD_SIDE = 1600;
+export const PLACE_IMAGE_UPLOAD_BYTES = 800 * 1024;
 
 /** 장소를 고르지 않고 이름만 입력했을 때 주소. DB 기본값과 같은 문구. */
 export const PLACE_ADDRESS_PENDING = "등록 대기중";
