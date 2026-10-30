@@ -51,6 +51,14 @@ export type PlaceSearchResult = {
   items: PlaceSearchItem[];
 };
 
+/** 좌표로 찾은 주소 */
+export type PlaceAddress = Pick<PlaceLocation, "address" | "jibunAddress">;
+
+/** 지도 핀 위치의 주소 (GET /api/places/address). 그 위치에 상세 주소가 없으면 found가 null */
+export type PlaceAddressResult = {
+  found: PlaceAddress | null;
+};
+
 export type PlacePage = {
   places: Place[];
   /** 다음 묶음을 불러올 커서. 마지막 묶음이면 null */

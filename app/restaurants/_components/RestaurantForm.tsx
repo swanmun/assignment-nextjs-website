@@ -212,10 +212,11 @@ export const RestaurantForm = ({ place, preview }: RestaurantFormProps) => {
     closePicker();
   };
 
-  const skipLocation = (name: string) => {
+  /** 장소명을 직접 입력했다. 지도로 위치를 정했으면 그 주소로, 아니면 주소 없이 등록한다. */
+  const inputPlaceDirectly = (name: string, location: PlaceLocation | null) => {
     touch("address");
     touch("name");
-    update({ name, location: null, locationSkipped: true, addressQuery: "" });
+    update({ name, location, locationSkipped: !location, addressQuery: "" });
     closePicker();
   };
 
@@ -278,7 +279,7 @@ export const RestaurantForm = ({ place, preview }: RestaurantFormProps) => {
           initialQuery={picker.query}
           preview={picker.preview}
           onSelect={selectPlace}
-          onDirectInput={skipLocation}
+          onDirectInput={inputPlaceDirectly}
           onClose={closePicker}
         />
       )}

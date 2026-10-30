@@ -16,7 +16,7 @@ import { Panel, Window, WindowWell } from "@/components/window/Window";
 import { cx } from "@/lib/cx";
 import { PLACE_ADDRESS_PENDING, PLACE_NAME_MAX, PLACE_SEARCH_QUERY_MAX, validatePlaceName } from "@/lib/place-rules";
 import { requestJson } from "@/lib/request-json";
-import type { PlaceSearchItem, PlaceSearchResult } from "@/lib/types";
+import type { PlaceAddress, PlaceAddressResult, PlaceLocation, PlaceSearchItem, PlaceSearchResult } from "@/lib/types";
 import page from "../../_components/page.module.css";
 import styles from "./PlacePicker.module.css";
 
@@ -32,7 +32,7 @@ type Choice =
   | { kind: "none" }
   /** 검색 결과를 골랐다: 검색어 + 고른 장소의 지번 주소·좌표 */
   | { kind: "place"; query: string; place: PlaceSearchItem }
-  /** 결과가 없어 장소명을 직접 입력했다: 지번 주소·좌표는 기본값 그대로 */
+  /** 결과가 없어 장소명을 직접 입력했다: 지도를 옮기기 전까지 지번 주소·좌표는 기본값 그대로 */
   | { kind: "direct"; name: string };
 
 /** design.pen "07 장소 등록" 시안 상태 */
@@ -71,10 +71,10 @@ export type PlacePickerProps = {
   /** 검색 화면 검색창에 미리 채울 검색어 */
   initialQuery: string;
   preview?: PlacePickerPreview;
-  /** 검색 결과를 고르고 "이 위치로 등록하기" (좌표는 지도 가운데 핀 위치) */
+  /** 검색 결과를 고르고 "이 위치로 등록하기" (좌표는 지도 가운데 핀 위치, 지도를 옮겼으면 주소도 핀 위치 주소) */
   onSelect: (place: PlaceSearchItem) => void;
-  /** 장소명을 직접 입력하고 "이 위치로 등록하기" (주소 없이 등록) */
-  onDirectInput: (name: string) => void;
+  /** 장소명을 직접 입력하고 "이 위치로 등록하기" (지도를 옮겨 주소를 찾았으면 그 위치, 아니면 null로 주소 없이 등록) */
+  onDirectInput: (name: string, location: PlaceLocation | null) => void;
   onClose: () => void;
 };
 
@@ -212,6 +212,8 @@ export const PlacePicker = ({ initialQuery, preview, onSelect, onDirectInput, on
           // 새로 고르면 지도 가운데(핀) 위치를 고른 장소에서 다시 시작한다.
           key={choice.kind === "place" ? `${choice.place.latitude}-${choice.place.longitude}` : choice.kind}
           choice={choice}
+          // 시안 미리보기에서는 주소를 찾지 않는다.
+          lookup={!preview}
           onSelect={onSelect}
           onDirectInput={onDirectInput}
         />
@@ -288,8 +290,8 @@ const SearchResults = ({ state, onPick, onDirectInput, onReset }: SearchResultsP
           title={failed ? "장소를 검색하지 못했어요" : "검색 결과가 없어요"}
           description={
             failed
-              ? `${state.message} 아래에 장소명을 직접 입력하면 주소 없이 등록돼요.`
-              : `네이버에서 '${query}'을(를) 찾지 못했어요. 아래에 장소명을 직접 입력하면 주소 없이 등록돼요.`
+              ? `${state.message} 아래에 장소명을 직접 입력하고 지도로 위치를 정해 주세요.`
+              : `네이버에서 '${query}'을(를) 찾지 못했어요. 아래에 장소명을 직접 입력하고 지도로 위치를 정해 주세요.`
           }
         />,
         `'${query}' 검색 결과 0곳`,
@@ -314,7 +316,7 @@ const DirectInput = ({ defaultName, onSubmit }: { defaultName: string; onSubmit:
           leftIcon="edit"
           value={name}
           maxLength={PLACE_NAME_MAX}
-          hint="주소는 저장되지 않고, 지도에도 핀이 표시되지 않아요."
+          hint="다음 화면에서 지도를 옮기면 핀 위치의 주소로 등록돼요. 옮기지 않으면 주소 없이 등록돼요."
           error={touched ? error : undefined}
           onChange={(event) => setName(event.target.value)}
           onBlur={() => setTouched(true)}
@@ -334,34 +336,93 @@ const DirectInput = ({ defaultName, onSubmit }: { defaultName: string; onSubmit:
   );
 };
 
+type AddressState =
+  /** 지도를 아직 옮기지 않았다: 고른 장소의 주소(직접 입력이면 등록 대기중) */
+  | { step: "idle" }
+  | { step: "loading" }
+  /** 핀 위치에서 찾은 주소. 주소가 없는 곳이거나 찾지 못했으면 null */
+  | { step: "done"; found: PlaceAddress | null };
+
+/** 지도 가운데 좌표가 이보다 덜 바뀌면 확대·축소만 한 것으로 본다. */
+const SAME_POINT = 1e-6;
+
+const moved = (a: MapPoint, b: MapPoint) =>
+  Math.abs(a.latitude - b.latitude) > SAME_POINT || Math.abs(a.longitude - b.longitude) > SAME_POINT;
+
 type ChosenLocationProps = {
   choice: Choice;
+  /** 지도를 옮기면 핀 위치의 주소를 찾는다. */
+  lookup: boolean;
   onSelect: (place: PlaceSearchItem) => void;
-  onDirectInput: (name: string) => void;
+  onDirectInput: (name: string, location: PlaceLocation | null) => void;
 };
 
-/** 지도(가운데 핀 고정 · 지도 이동)와 지번 주소. 고르기 전·직접 입력은 기본값(서울시청 · 등록 대기중)을 둔다. */
-const ChosenLocation = ({ choice, onSelect, onDirectInput }: ChosenLocationProps) => {
+/**
+ * 지도(가운데 핀 고정 · 지도 이동)와 지번 주소. 고르기 전·직접 입력은 기본값(서울시청 · 등록 대기중)을 둔다.
+ * 지도를 옮기면 멈출 때마다 핀 위치의 주소를 BFF(리버스 지오코딩)로 찾아 바꾼다.
+ */
+const ChosenLocation = ({ choice, lookup, onSelect, onDirectInput }: ChosenLocationProps) => {
   const place = choice.kind === "place" ? choice.place : null;
   const start: MapPoint = place ? { latitude: place.latitude, longitude: place.longitude } : SEOUL_CITY_HALL;
   const [point, setPoint] = useState<MapPoint>(start);
+  const [address, setAddress] = useState<AddressState>({ step: "idle" });
+  const requestId = useRef(0);
   const label = place?.title ?? (choice.kind === "direct" ? choice.name : undefined);
+  const found = address.step === "done" ? address.found : null;
+
+  /** 늦게 도착한 이전 위치의 주소는 버린다. */
+  const findAddress = async ({ latitude, longitude }: MapPoint) => {
+    const id = ++requestId.current;
+    setAddress({ step: "loading" });
+    try {
+      const result = await requestJson<PlaceAddressResult>(
+        `/api/places/address?lat=${latitude}&lng=${longitude}`,
+        {},
+        "주소를 찾지 못했어요.",
+      );
+      if (id === requestId.current) setAddress({ step: "done", found: result.found });
+    } catch {
+      if (id === requestId.current) setAddress({ step: "done", found: null });
+    }
+  };
+
+  const changeCenter = (next: MapPoint) => {
+    if (!moved(next, point)) return;
+    setPoint(next);
+    if (lookup && choice.kind !== "none") void findAddress(next);
+  };
 
   const confirm = () => {
-    if (place) onSelect({ ...place, ...point });
-    else if (choice.kind === "direct") onDirectInput(choice.name);
+    if (place) onSelect({ ...place, ...point, ...found });
+    else if (choice.kind === "direct") onDirectInput(choice.name, found && { ...found, ...point });
+  };
+
+  const addressText = () => {
+    if (address.step === "loading") return "주소를 찾는 중이에요…";
+    if (address.step === "done") {
+      if (found) return found.jibunAddress ?? found.address;
+      return place ? "이 위치의 주소를 찾지 못해 검색한 주소로 등록돼요." : "이 위치의 주소를 찾지 못해 주소 없이 등록돼요.";
+    }
+    return place ? (place.jibunAddress ?? place.address) : PLACE_ADDRESS_PENDING;
   };
 
   return (
     <>
-      <MapPicker center={start} label={label} size="lg" onCenterChange={setPoint} fallback={<MapPreview label={label ?? "서울시청"} />} />
+      <MapPicker center={start} label={label} size="lg" onCenterChange={changeCenter} fallback={<MapPreview label={label ?? "서울시청"} />} />
       <Fieldset legend="지번 주소">
         <div className={styles.addressRow}>
           <MapPin size={18} aria-hidden />
-          <p className={`${styles.addressText} typo-body-md`}>{place ? (place.jibunAddress ?? place.address) : PLACE_ADDRESS_PENDING}</p>
+          <p className={`${styles.addressText} typo-body-md`} aria-live="polite">
+            {addressText()}
+          </p>
         </div>
       </Fieldset>
-      <Button leftIcon="check" disabled={choice.kind === "none"} className={page.fullWidth} onClick={confirm}>
+      <Button
+        leftIcon="check"
+        disabled={choice.kind === "none" || address.step === "loading"}
+        className={page.fullWidth}
+        onClick={confirm}
+      >
         이 위치로 등록하기
       </Button>
     </>
