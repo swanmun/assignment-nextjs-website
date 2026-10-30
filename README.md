@@ -88,3 +88,16 @@ Storybook을 디자인의 기준(SSOT)으로 둡니다. 자세한 규칙은 [`CL
 - 키는 서버 전용 환경변수(`NAVER_SEARCH_CLIENT_ID`, `NAVER_SEARCH_CLIENT_SECRET`, `NCP_MAP_KEY_ID`, `NCP_MAP_KEY`)에 둡니다. 브라우저 SDK가 쓰는 지도 Client ID만 `NEXT_PUBLIC_NCP_MAP_KEY_ID`로 둡니다(공개 값, NCP 콘솔의 Web 서비스 URL 등록으로 제한). `.env.example`을 참고하세요.
 - 검색 결과가 없으면 장소명을 직접 입력하고 지도로 위치를 정합니다. 지도를 옮기지 않으면 주소 없이 등록됩니다.
 - 위치(지번 주소·좌표) 컬럼은 `supabase/migrations/20261029000000_place_location.sql`로 추가합니다.
+
+## PWA (홈 화면 설치)
+
+- 매니페스트: `app/manifest.ts` (이름 · 아이콘 · `display: standalone` · 배경색/테마색). 앱 이름과 색은 `lib/pwa/config.ts`에 모았습니다.
+- 설치 띠배너(메인 화면 아래): 안드로이드는 브라우저가 설치 가능하다고 알려 주면(`beforeinstallprompt`) 띄우고, 누르면 바로 설치 창을 엽니다. iOS는 설치 창 API가 없어 누르면 바텀시트로 홈 화면 추가 방법을 안내합니다. 홈 화면 앱으로 실행 중이면 띄우지 않고, 닫으면 7일 동안 다시 띄우지 않습니다. 설치 창은 HTTPS(배포 주소)에서만 열립니다.
+- 스플래시: 안드로이드는 매니페스트(이름 · 배경색 · 아이콘)로 자동으로 만들어집니다. iOS는 기기 화면 크기·방향별 이미지(`public/splash/`, 기기 목록 `lib/pwa/splash-screens.json`)를 `apple-touch-startup-image`로 지정합니다.
+- 아이콘·파비콘·스플래시 이미지는 루트의 `logo.png` 한 장으로 만듭니다. 로고를 바꾸면 다시 만드세요(Python + Pillow 필요).
+
+```bash
+python scripts/make-app-icons.py
+```
+
+- 오프라인 캐시·푸시 알림(서비스 워커)은 넣지 않았습니다.

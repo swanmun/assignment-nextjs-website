@@ -22,11 +22,6 @@
   max-width: calc(var(--layout-content-width) + 2 * var(--spacing-16));
 }
 
-/* 플로팅 버튼 자리만큼 아래 여백 */
-.withFab {
-  padding-bottom: 96px;
-}
-
 /* 반응형 카드 그리드: 360 1열 → 768 2열 → 1024 3열 → 1280 4열 */
 .cardGrid {
   display: grid;
@@ -73,12 +68,28 @@
   color: var(--color-text-secondary);
 }
 
-/* 오른쪽 아래 고정 버튼 — 넓은 화면에서도 레이아웃 오른쪽 끝에 맞춘다 */
-.fab {
-  position: fixed;
-  right: max(var(--spacing-16), calc((100vw - var(--layout-max-width)) / 2));
-  bottom: var(--spacing-16);
+/*
+ * 화면 아래에 붙는 영역: 플로팅 버튼 + 설치 띠배너. 띠배너가 뜨면 버튼이 그 위로 올라간다.
+ * sticky라 스크롤 중에는 화면 아래에 떠 있고, 목록 끝에서는 본문 뒤에 자리를 차지해 내용을 가리지 않는다.
+ */
+.bottomDock {
+  position: sticky;
+  bottom: 0;
   z-index: 20;
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  pointer-events: none;
+}
+
+.bottomDock > * {
+  pointer-events: auto;
+}
+
+/* 오른쪽 아래 버튼 — 넓은 화면에서도 레이아웃 오른쪽 끝에 맞춘다 */
+.fab {
+  align-self: flex-end;
+  margin: 0 max(var(--spacing-16), calc((100% - var(--layout-max-width)) / 2)) var(--spacing-16) 0;
   box-shadow:
     var(--effect-raised-brand),
     4px 4px 0 var(--color-border-shadow-strong);

@@ -3,8 +3,8 @@ import { ButtonLink } from "@/components/button/Button";
 import { Hero } from "@/components/hero/Hero";
 import { TopNavigation } from "@/components/navigation/TopNavigation";
 import { Skeleton } from "@/components/skeleton/Skeleton";
-import { cx } from "@/lib/cx";
 import { listPlaces, PLACE_PAGE_SIZE } from "@/lib/supabase/place";
+import { InstallPrompt } from "./_components/InstallPrompt";
 import { MainList } from "./_components/MainList";
 import page from "./_components/page.module.css";
 import { SearchBar } from "./_components/SearchBar";
@@ -39,14 +39,17 @@ export default function Home({ searchParams }: { searchParams: SearchParams }) {
         badge="구로 출발 · 차로 1시간 이내"
         headline={"이번 주말엔\n이웃만 아는 그 집으로."}
       />
-      <main className={cx(page.body, page.withFab)}>
+      <main className={page.body}>
         <Suspense fallback={<Skeleton shape="rect" width="100%" height={480} />}>
           <Results searchParams={searchParams} />
         </Suspense>
       </main>
-      <ButtonLink href="/restaurants/new" size="lg" leftIcon="edit" className={page.fab}>
-        맛집 쓰기
-      </ButtonLink>
+      <div className={page.bottomDock}>
+        <ButtonLink href="/restaurants/new" size="lg" leftIcon="edit" className={page.fab}>
+          맛집 쓰기
+        </ButtonLink>
+        <InstallPrompt />
+      </div>
     </div>
   );
 }
