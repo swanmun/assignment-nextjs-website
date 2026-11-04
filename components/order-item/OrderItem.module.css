@@ -1,0 +1,123 @@
+/* design.pen OrderItem/Paid(vzyAt) · Paid-Locked(VfM3n) · Canceled(HlUek) */
+.item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-elevated);
+  color: var(--color-text-default);
+}
+
+/* 위: 썸네일 + 종류·상태 배지 · 상품명 · 일시 */
+.main {
+  display: flex;
+  gap: var(--spacing-12);
+  padding: var(--spacing-12);
+}
+
+.thumbnail {
+  flex: none;
+  box-sizing: border-box;
+  width: 72px;
+  height: 72px;
+  border: 1px solid var(--color-border-default);
+  background: var(--pattern-dots);
+  object-fit: cover;
+  /* 디더링 이미지가 번지지 않도록 픽셀 그대로 확대 */
+  image-rendering: pixelated;
+}
+
+.info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.badges {
+  display: flex;
+  gap: 4px;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-default);
+}
+
+/* 항목 전체를 누를 수 있게 링크 영역을 항목 크기로 넓힌다 */
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.link:focus-visible {
+  outline: none;
+}
+
+.link:focus-visible::after {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.schedule {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+/* 아래: 금액 + 결제 취소 버튼(또는 환불 상태) */
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  padding: var(--spacing-8) var(--spacing-12);
+  border-top: 1px solid var(--color-border-subtle);
+  background: var(--color-background-subtle);
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-8);
+}
+
+.amount {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.amountValue {
+  color: var(--color-text-default);
+}
+
+.amountDetail {
+  color: var(--color-text-tertiary);
+}
+
+/* 링크 영역 위로 올려 버튼만 따로 눌리게 한다 */
+.action {
+  position: relative;
+  z-index: 1;
+}
+
+.reason {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.reason > svg {
+  flex: none;
+}
