@@ -1,0 +1,30 @@
+/* 결제하기(primary) · QR로 결제하기(secondary)를 위아래로 쌓고 가로를 채운다 */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+/* Button 기본값(flex: none)보다 우선하도록 선택자를 구체적으로 둔다 */
+.actions > a,
+.actions > button {
+  width: 100%;
+}
+
+.qrBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+/* 원본 125px QR을 2배로 키워도 흐려지지 않게 픽셀 그대로 */
+.qr {
+  display: block;
+  width: 200px;
+  height: 200px;
+  padding: var(--spacing-8);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-elevated);
+  image-rendering: pixelated;
+}
