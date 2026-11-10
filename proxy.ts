@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { redirectWithSession, updateSession } from "@/lib/supabase/proxy";
 
 /** 로그인해야 들어갈 수 있는 경로 */
-const PROTECTED = ["/me", "/restaurants/new"];
+const PROTECTED = ["/me", "/restaurants/new", "/payments"];
 /** 맛집 수정 화면 (/restaurants/:id/edit) */
 const EDIT_PATH = /^\/restaurants\/[^/]+\/edit\/?$/;
 
@@ -21,6 +21,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // 정적 파일·이미지·지도 이미지·매니페스트(세션이 필요 없다)는 건너뛴다.
-  matcher: ["/((?!_next/static|_next/image|api/map|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2)$).*)"],
+  // 정적 파일·이미지·지도 이미지·매니페스트·결제 웹훅(세션이 필요 없다)은 건너뛴다.
+  matcher: ["/((?!_next/static|_next/image|api/map|api/payments/webhook|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2)$).*)"],
 };

@@ -1,9 +1,10 @@
 import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
-import { getSupabaseEnv } from "./env";
+import { getSupabaseEnv, getSupabaseSecretEnv } from "./env";
 
 /**
  * Route Handler·Server Action·Server Component에서 쓰는 Supabase 클라이언트.
@@ -29,4 +30,20 @@ export async function createSupabaseServerClient() {
       },
     },
   });
+}
+
+let adminClient: SupabaseClient | null = null;
+
+/**
+ * secret key 클라이언트(RLS 우회, 세션 없음). 결제 기록(payment·product_snapshot) 쓰기와 웹훅에서만 쓴다.
+ * 호출하는 쪽이 권한(로그인 회원·포트원 서명)을 먼저 확인해야 한다. 규칙은 rules/payment.md.
+ */
+export function createSupabaseAdminClient() {
+  if (!adminClient) {
+    const { url, secretKey } = getSupabaseSecretEnv();
+    adminClient = createClient(url, secretKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    });
+  }
+  return adminClient;
 }

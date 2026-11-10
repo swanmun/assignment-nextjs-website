@@ -66,3 +66,26 @@ export type PlacePage = {
   /** 조건에 맞는 전체 개수. 첫 묶음에만 담긴다. */
   total?: number;
 };
+
+/** 화면 크기별 이미지 공개 URL. lg: 데스크톱(1024px 이상), md: 모바일·태블릿 */
+export type SizedImage = { lg: string; md: string };
+
+/** 강연·모임 상품 (메인 배너·상품 상세) */
+export type Product = {
+  id: string;
+  name: string;
+  description: string | null;
+  /** 행사 일시 (ISO). 정해지지 않았으면 null */
+  eventAt: string | null;
+  /** 화면에 보일 행사 일시. 예: "2026.11.08(일) 오전 10:00" */
+  eventAtLabel: string | null;
+  address: string | null;
+  /** 최대 참여 가능 수 */
+  capacity: number | null;
+  /** 가격(원) */
+  price: number | null;
+  /** 배너·상세 맨 위 대표 이미지 */
+  mainImage: SizedImage;
+  /** 상세 설명 이미지 */
+  detailImage: SizedImage;
+};

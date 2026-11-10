@@ -9,3 +9,16 @@ export function getSupabaseEnv() {
   }
   return { url, key };
 }
+
+/**
+ * 서버 전용 secret key(service_role, RLS 우회). 사용자 세션 없이 쓰는 결제 기록·웹훅에서만 쓴다(rules/payment.md).
+ * 절대 브라우저로 보내지 않는다.
+ */
+export function getSupabaseSecretEnv() {
+  const { url } = getSupabaseEnv();
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error("SUPABASE_SECRET_KEY 환경변수가 필요합니다. .env.example을 참고하세요.");
+  }
+  return { url, secretKey };
+}

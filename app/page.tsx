@@ -5,13 +5,11 @@ import { TopNavigation } from "@/components/navigation/TopNavigation";
 import { PromoBanner } from "@/components/promo-banner/PromoBanner";
 import { Skeleton } from "@/components/skeleton/Skeleton";
 import { listPlaces, PLACE_PAGE_SIZE } from "@/lib/supabase/place";
+import { listProducts } from "@/lib/supabase/product";
 import { InstallPrompt } from "./_components/InstallPrompt";
 import { MainList } from "./_components/MainList";
 import page from "./_components/page.module.css";
 import { SearchBar } from "./_components/SearchBar";
-
-/** 요리 수업 배너 링크: 요리 수업 상품 상세 */
-const PROMO_BANNER_HREF = "/classes/cooking";
 
 type SearchParams = Promise<{ q?: string | string[] }>;
 
@@ -23,6 +21,20 @@ const readQuery = async (searchParams: SearchParams) => {
 const SearchBarWithQuery = async ({ searchParams }: { searchParams: SearchParams }) => (
   <SearchBar defaultValue={await readQuery(searchParams)} />
 );
+
+/** 공개 상품(강연·모임)마다 배너 한 장. 누르면 상품 상세로 간다. */
+const ProductBanners = async () => {
+  const products = await listProducts();
+  return products.map((product) => (
+    <PromoBanner
+      key={product.id}
+      href={`/products/${product.id}`}
+      imageSrc={product.mainImage.lg}
+      mdImageSrc={product.mainImage.md}
+      alt={product.name}
+    />
+  ));
+};
 
 const Results = async ({ searchParams }: { searchParams: SearchParams }) => {
   const query = await readQuery(searchParams);
@@ -44,7 +56,9 @@ export default function Home({ searchParams }: { searchParams: SearchParams }) {
         headline={"이번 주말엔\n이웃만 아는 그 집으로."}
       />
       <main className={page.body}>
-        <PromoBanner href={PROMO_BANNER_HREF} imageSrc="/images/promo-cooking-class.png" alt="심심한 주말 놓치지 아까운 기회 — 요리 수업 알아보기" />
+        <Suspense fallback={<Skeleton shape="rect" width="100%" height={175} />}>
+          <ProductBanners />
+        </Suspense>
         <Suspense fallback={<Skeleton shape="rect" width="100%" height={480} />}>
           <Results searchParams={searchParams} />
         </Suspense>

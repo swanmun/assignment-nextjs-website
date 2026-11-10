@@ -6,8 +6,12 @@ import { Block, ComponentPage } from "../kit";
 /** 툴바 Viewport 메뉴에서 고를 수 있는 확인용 화면 크기 */
 const VIEWPORTS = {
   mobile360: { name: "Mobile 360", styles: { width: "360px", height: "720px" }, type: "mobile" },
+  tablet768: { name: "Tablet 768", styles: { width: "768px", height: "1024px" }, type: "tablet" },
   desktop1280: { name: "Desktop 1280", styles: { width: "1280px", height: "800px" }, type: "desktop" },
 } as const;
+
+/** 모바일·태블릿용 md: lg 가운데를 1.875:1로 자른 이미지 */
+const MD_IMAGE_SRC = "/images/promo-cooking-class-md.png";
 
 const meta = {
   title: "Components/Etc/PromoBanner",
@@ -44,8 +48,14 @@ export const Overview: Story = {
         <PromoBanner {...args} />
       </Block>
       <Block
+        title="lg · md 두 장 (상품 배너)"
+        usage="DB 상품처럼 데스크톱용 lg(1024×332)와 모바일·태블릿용 md(1.875:1로 미리 자른 622×332)를 함께 주면 mdImageSrc를 씁니다. 1024px 미만은 md를 1.875:1로, 1024px 이상은 lg 전체를 3.08:1로 보여 주고, 브라우저는 화면에 맞는 한 장만 받습니다. 툴바 Viewport의 Tablet 768에서 md가 유지되는지 확인하세요."
+      >
+        <PromoBanner {...args} mdImageSrc={MD_IMAGE_SRC} />
+      </Block>
+      <Block
         title="Static (href 없음)"
-        usage="href를 비우면 링크 없이 이미지만 보여 줍니다. 요리 수업 상품 상세(/classes/cooking) 맨 위 대표 이미지로 씁니다. 크기·비율은 링크 배너와 같습니다."
+        usage="href를 비우면 링크 없이 이미지만 보여 줍니다. 상품 상세(/products/[id], /classes/cooking) 맨 위 대표 이미지로 씁니다. 크기·비율은 링크 배너와 같습니다."
       >
         <PromoBanner imageSrc={args.imageSrc} alt={args.alt} />
       </Block>
@@ -60,6 +70,17 @@ export const Mobile360: Story = {
 
 export const Desktop1280: Story = {
   globals: { viewport: { value: "desktop1280", isRotated: false } },
+  render: InBody,
+};
+
+export const Tablet768: Story = {
+  globals: { viewport: { value: "tablet768", isRotated: false } },
+  render: InBody,
+};
+
+/** lg·md 두 장 — 1024px 미만은 md, 이상은 lg */
+export const WithMd: Story = {
+  args: { mdImageSrc: MD_IMAGE_SRC },
   render: InBody,
 };
 

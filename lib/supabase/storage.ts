@@ -2,6 +2,7 @@ import "server-only";
 
 export const PROFILE_IMAGE_BUCKET = "profile-image";
 export const PLACE_IMAGE_BUCKET = "place-image";
+export const PRODUCT_IMAGE_BUCKET = "product-image";
 
 /** 버킷 안 파일 경로 → 공개 URL. 스토리지 주소는 환경변수로 받는다. */
 const publicUrl = (bucket: string, path: string) => {
@@ -20,6 +21,7 @@ export function profileImageUrl(path: string) {
 }
 
 export const placeImageUrl = (path: string) => publicUrl(PLACE_IMAGE_BUCKET, path);
+export const productImageUrl = (path: string) => publicUrl(PRODUCT_IMAGE_BUCKET, path);
 
 /** 우리 버킷에 올린 파일 경로인지 (구글 사진 URL이면 false) */
 export const isStoredPath = (path: string | null | undefined): path is string => !!path && !/^https?:\/\//.test(path);

@@ -25,9 +25,16 @@
   object-position: center;
 }
 
+/* lg 한 장만 쓸 때: 768px 이상은 원본 1024×332 비율(3.08:1) — 잘리지 않고 전체가 보인다 */
 @media (min-width: 768px) {
-  .banner {
-    /* 원본 1024×332 비율(3.08:1) — 잘리지 않고 전체가 보인다 */
+  .banner:not(.sized) {
+    --promo-banner-ratio: 1024 / 332;
+  }
+}
+
+/* lg·md를 함께 쓸 때(.sized): 태블릿까지는 md(1.875:1)를 그대로, 1024px(데스크톱) 이상에서 lg 전체를 보여 준다 */
+@media (min-width: 1024px) {
+  .sized {
     --promo-banner-ratio: 1024 / 332;
   }
 }

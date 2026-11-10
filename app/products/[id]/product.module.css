@@ -1,0 +1,56 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+/* 이름은 DB에 넣은 줄바꿈 그대로 */
+.name {
+  white-space: pre-line;
+}
+
+.price {
+  color: var(--color-text-brand);
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  margin: 0;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-12);
+}
+
+.summaryRow dt {
+  flex: none;
+  color: var(--color-text-secondary);
+}
+
+.summaryRow dd {
+  margin: 0;
+  text-align: right;
+}
+
+/* 설명: 상세 본문과 같은 오목한 흰 바탕 */
+.content {
+  padding: var(--spacing-12);
+  background: var(--color-background-subtle);
+  box-shadow: var(--effect-sunken);
+  color: var(--color-text-default);
+  white-space: pre-line;
+}
+
+/* 상세 이미지: 읽기 영역 너비를 채우고 원본 비율 그대로 */
+.detailImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-surface);
+}

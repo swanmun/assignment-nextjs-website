@@ -1,0 +1,8 @@
+/* 상품 상세 이미지와 같은 모습: 읽기 영역 너비, 1px 테두리 */
+.photo {
+  display: block;
+  width: 100%;
+  max-width: var(--layout-content-width);
+  height: auto;
+  border: 1px solid var(--color-border-default);
+}

@@ -1,0 +1,4 @@
+/* <picture>는 상자를 만들지 않는다: <img>가 부모 기준으로 크기(100% 등)를 잡게 한다. */
+.picture {
+  display: contents;
+}

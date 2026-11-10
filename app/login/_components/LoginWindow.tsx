@@ -17,7 +17,7 @@ const ERROR_MESSAGE: Record<LoginError, string> = {
   auth: "로그인하지 못했어요. 잠시 후 다시 시도해 주세요.",
 };
 
-export const LoginWindow = ({ error }: { error?: LoginError }) => {
+export const LoginWindow = ({ error, next }: { error?: LoginError; next?: string }) => {
   const router = useRouter();
   const [showError, setShowError] = useState(Boolean(error));
   const [submitting, setSubmitting] = useState(false);
@@ -43,6 +43,8 @@ export const LoginWindow = ({ error }: { error?: LoginError }) => {
           <div className={styles.actions}>
             {/* BFF(/api/auth/signin)가 구글 동의 화면으로 리다이렉트한다. */}
             <form action="/api/auth/signin" method="post" onSubmit={() => setSubmitting(true)}>
+              {/* 결제하기 등에서 왔으면 로그인 후 그 화면으로 돌아간다. */}
+              {next && <input type="hidden" name="next" value={next} />}
               <Button type="submit" size="lg" leftIcon="user" loading={submitting} className={page.fullWidth}>
                 Google 계정으로 로그인
               </Button>

@@ -15,13 +15,13 @@ export const metadata: Metadata = { title: "로그인 · 숨은 맛집 커뮤니
 const FEATURES = ["광고·협찬 없는 이웃의 진짜 추천", "사진·주소·지도를 한 화면에서 보고 바로 출발", "구로에서 차로 1시간 이내, 숨은 곳만"];
 
 type LoginProps = {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 };
 
 const LoginWindowWithError = async ({ searchParams }: LoginProps) => {
-  const { error } = await searchParams;
+  const { error, next } = await searchParams;
   const loginError: LoginError | undefined = error === "cancelled" || error === "auth" ? error : undefined;
-  return <LoginWindow error={loginError} />;
+  return <LoginWindow error={loginError} next={next} />;
 };
 
 export default function Login({ searchParams }: LoginProps) {
