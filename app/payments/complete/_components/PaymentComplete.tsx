@@ -67,7 +67,7 @@ export const PaymentComplete = ({ paymentId, failure }: PaymentCompleteProps) =>
       title="결제가 완료됐어요"
       description={`${result.orderName} · ${formatWon(result.amount)}`}
       secondaryAction={{ label: "홈으로", leftIcon: "home", onClick: () => router.push("/") }}
-      primaryAction={{ label: "상품 다시 보기", onClick: () => router.push(`/products/${result.productId}`) }}
+      primaryAction={{ label: "결제 내역 보기", onClick: () => router.push("/me?tab=payments") }}
     />
   );
 };

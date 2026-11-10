@@ -89,3 +89,30 @@ export type Product = {
   /** 상세 설명 이미지 */
   detailImage: SizedImage;
 };
+
+/** 마이 페이지 결제·취소 내역 한 줄. OrderItem props에 그대로 넘긴다(rules/payment.md › 결제 내역). */
+export type OrderHistoryItem = {
+  /** transaction_key(포트원 paymentId) */
+  key: string;
+  status: "paid" | "paid-locked" | "canceled";
+  href: string;
+  imageUrl: string;
+  imageAlt: string;
+  kind: string;
+  title: string;
+  /** "11.21(토) 11:00 · 구로역 2번 출구" */
+  schedule: string;
+  /** "25,000원" · 취소는 "환불 25,000원" */
+  amount: string;
+  /** "11.03 결제 · 신용카드" · 취소는 "결제 25,000원 · 11.05 취소" */
+  amountDetail: string;
+  /** paid-locked일 때 취소할 수 없는 이유 */
+  lockedReason?: string;
+};
+
+export type OrderHistory = {
+  /** 취소되지 않은 결제, 최신 결제순 */
+  paid: OrderHistoryItem[];
+  /** 취소한 결제, 최신 취소순 */
+  cancelled: OrderHistoryItem[];
+};

@@ -3,14 +3,17 @@ import "server-only";
 import type { Payment } from "@portone/server-sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
+  getCancelBlockReason,
+  PAYMENT_CANCEL_REASON,
   PAYMENT_CURRENCY,
   PAYMENT_TYPE,
+  type PaymentCancelResult,
   type PaymentCompleteResult,
   type PaymentCustomData,
   toLedgerAmount,
   toOrderName,
 } from "@/lib/payment-rules";
-import { fetchPortonePayment, getPortoneEnv } from "@/lib/portone";
+import { cancelPortonePayment, fetchPortonePayment, getPortoneEnv } from "@/lib/portone";
 import { getProductRow, productPrice } from "./product";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "./server";
 
@@ -208,4 +211,149 @@ export async function completePayment(paymentId: string): Promise<PaymentComplet
   } = await supabase.auth.getUser();
   if (!user) throw new PaymentCompleteError("로그인이 필요해요.", 401);
   return recordPaidPayment(paymentId, user.id);
+}
+
+/** 결제 행 하나(취소 처리용). 스냅숏의 상품 정보까지 */
+type LedgerRow = {
+  user_id: string;
+  product_id: string;
+  amount: string | number;
+  product_snapshot: { snapshot_product: { event_at?: string | null } | null } | null;
+};
+
+async function findLedgerRow(db: SupabaseClient, paymentId: string, type: string): Promise<LedgerRow | null> {
+  const { data, error } = await db
+    .from("payment")
+    .select("user_id, product_id, amount, product_snapshot(snapshot_product)")
+    .eq("transaction_key", paymentId)
+    .eq("type", type)
+    .maybeSingle<LedgerRow>();
+  if (error) throw new Error(`결제 기록을 읽지 못했어요: ${error.message}`);
+  return data;
+}
+
+/** 취소 기록 스냅숏: 취소 시점의 PortOne 결제 정보 */
+const toCancelSnapshot = (payment: Payment.CancelledPayment, refundAmount: number) => ({
+  paymentId: payment.id,
+  transactionId: payment.transactionId,
+  status: payment.status,
+  orderName: payment.orderName,
+  amount: payment.amount,
+  currency: payment.currency,
+  refundAmount,
+  cancelledAt: payment.cancelledAt,
+  cancellations: payment.cancellations.map((cancellation) => ({
+    id: "id" in cancellation ? cancellation.id : null,
+    status: cancellation.status,
+    totalAmount: "totalAmount" in cancellation ? cancellation.totalAmount : null,
+    reason: "reason" in cancellation ? cancellation.reason : null,
+    cancelledAt: "cancelledAt" in cancellation ? (cancellation.cancelledAt ?? null) : null,
+  })),
+});
+
+/**
+ * 결제 취소 기록 (rules/payment.md › 결제 취소 웹훅 1·2·4·5·6). 취소 BFF가 쓰고, 취소 웹훅도 같은 함수를 쓴다.
+ * PortOne에서 실제로 전액 취소된 결제만 CANCELLED 행(−금액)으로 남긴다. 몇 번 불려도 행은 하나다.
+ */
+export async function recordCancelledPayment(paymentId: string): Promise<PaymentCancelResult> {
+  if (!UUID.test(paymentId)) throw new PaymentCompleteError("올바르지 않은 결제 번호예요.", 400);
+  const db = createSupabaseAdminClient();
+
+  // 1. 이미 기록했으면 끝(멱등)
+  const recorded = await findLedgerRow(db, paymentId, PAYMENT_TYPE.cancelled);
+  if (recorded) return { paymentId, refundAmount: Math.abs(Number(recorded.amount)) };
+
+  const paid = await findLedgerRow(db, paymentId, PAYMENT_TYPE.paid);
+  if (!paid) throw new PaymentCompleteError("결제 내역을 찾지 못했어요.", 404);
+  const paidAmount = Number(paid.amount);
+
+  // 2. PortOne에서 전액 취소됐는지 확인
+  const payment = await fetchPortonePayment(paymentId);
+  if (!payment) throw new PaymentCompleteError("결제 정보를 찾지 못했어요.", 404);
+  if (payment.status !== "CANCELLED" || payment.storeId !== getPortoneEnv().storeId) {
+    throw new PaymentCompleteError("결제가 취소되지 않았어요.", 409);
+  }
+
+  // 3. 성공한 취소 금액 합 = 결제 금액 (전액 취소만)
+  const refundAmount = payment.cancellations.reduce(
+    (sum, cancellation) => (cancellation.status === "SUCCEEDED" ? sum + cancellation.totalAmount : sum),
+    0,
+  );
+  if (refundAmount !== paidAmount) {
+    console.error("[payment] 취소 금액 불일치", { paymentId, refundAmount, paidAmount });
+    throw new PaymentCompleteError("취소 금액이 결제 금액과 달라요. 고객센터로 문의해 주세요.", 409);
+  }
+
+  // 4. 스냅숏 → CANCELLED 행. 상품 정보는 결제 당시 스냅숏을 그대로 쓴다.
+  const snapshotId = crypto.randomUUID();
+  const { error: snapshotError } = await db.from("product_snapshot").insert({
+    id: snapshotId,
+    snapshot_product: paid.product_snapshot?.snapshot_product ?? null,
+    snapshot_payment: toCancelSnapshot(payment, refundAmount),
+  });
+  if (snapshotError) {
+    console.error("[payment] 취소 스냅숏 저장 실패", snapshotError);
+    throw new PaymentCompleteError(SAVE_FAILED, 500);
+  }
+
+  const { error: cancelError } = await db.from("payment").insert({
+    transaction_key: paymentId,
+    type: PAYMENT_TYPE.cancelled,
+    amount: toLedgerAmount(PAYMENT_TYPE.cancelled, refundAmount),
+    product_id: paid.product_id,
+    user_id: paid.user_id,
+    payment_snapshot_id: snapshotId,
+  });
+  if (cancelError) {
+    await db.from("product_snapshot").delete().eq("id", snapshotId);
+    // 5. 동시에 들어온 같은 취소(두 번 클릭·취소 웹훅)가 먼저 기록했으면 성공
+    if (cancelError.code === UNIQUE_VIOLATION) return { paymentId, refundAmount };
+    console.error("[payment] 취소 기록 저장 실패", cancelError);
+    throw new PaymentCompleteError(SAVE_FAILED, 500);
+  }
+
+  return { paymentId, refundAmount };
+}
+
+/** 취소 요청은 접수됐지만 아직 환불이 끝나지 않음(비동기 취소). 기록은 취소 웹훅이 한다. */
+export class PaymentCancelPendingError extends PaymentCompleteError {
+  constructor() {
+    super("취소 요청을 접수했어요. 처리가 끝나면 취소 내역으로 옮겨져요.", 202);
+  }
+}
+
+/**
+ * 마이 페이지 결제 취소 BFF용 (rules/payment.md › 결제 취소).
+ * 로그인 회원 본인의 결제만, 환불 규정 안에서, 전액 취소한다. 여러 번 눌러도 한 번만 취소·기록된다.
+ */
+export async function cancelMyPayment(paymentId: string): Promise<PaymentCancelResult> {
+  if (!UUID.test(paymentId)) throw new PaymentCompleteError("올바르지 않은 결제 번호예요.", 400);
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new PaymentCompleteError("로그인이 필요해요.", 401);
+
+  // 1. 본인 결제인지
+  const db = createSupabaseAdminClient();
+  const paid = await findLedgerRow(db, paymentId, PAYMENT_TYPE.paid);
+  if (!paid) throw new PaymentCompleteError("결제 내역을 찾지 못했어요.", 404);
+  if (paid.user_id !== user.id) throw new PaymentCompleteError("다른 계정으로 결제한 내역이에요.", 403);
+
+  // 2. 이미 취소했으면 그대로 성공(멱등)
+  const cancelled = await findLedgerRow(db, paymentId, PAYMENT_TYPE.cancelled);
+  if (cancelled) return { paymentId, refundAmount: Math.abs(Number(cancelled.amount)) };
+
+  // 3. 환불 규정
+  const blockReason = getCancelBlockReason(paid.product_snapshot?.snapshot_product?.event_at);
+  if (blockReason) throw new PaymentCompleteError(blockReason, 409);
+
+  // 4. PortOne 전액 취소. 잔액 검증으로 이중 환불을 막는다.
+  const outcome = await cancelPortonePayment(paymentId, Number(paid.amount), PAYMENT_CANCEL_REASON);
+  if (outcome.kind === "failed") throw new PaymentCompleteError(outcome.message, outcome.status);
+  if (outcome.kind === "requested") throw new PaymentCancelPendingError();
+
+  // 5. 기록 (succeeded·already-cancelled)
+  return recordCancelledPayment(paymentId);
 }

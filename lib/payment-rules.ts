@@ -44,6 +44,32 @@ export type PaymentCompleteResult = {
   amount: number;
 };
 
+/** 결제 취소 결과 (POST /api/payments/[paymentId]/cancel) */
+export type PaymentCancelResult = {
+  paymentId: string;
+  /** 환불 금액(원, 양수) */
+  refundAmount: number;
+};
+
+/** 포트원에 남기는 취소 사유 (마이 페이지에서 본인이 취소) */
+export const PAYMENT_CANCEL_REASON = "고객 요청";
+
+/** 환불 규정: 행사 시작 N일(N×24시간) 전까지 전액 환불. 부분 환불은 하지 않는다. */
+export const CANCEL_DEADLINE_DAYS = 3;
+
+/**
+ * 취소할 수 없는 이유. 취소할 수 있으면 null. 화면(버튼 잠금)과 BFF(최종 판단)가 함께 쓴다.
+ * @param eventAt 결제 스냅숏의 행사 일시(ISO). 미정이면 null → 취소 가능
+ */
+export const getCancelBlockReason = (eventAt: string | null | undefined, now = Date.now()): string | null => {
+  if (!eventAt) return null;
+  const start = new Date(eventAt).getTime();
+  if (Number.isNaN(start)) return null;
+  if (start <= now) return "이미 끝난 행사예요";
+  if (start - now < CANCEL_DEADLINE_DAYS * 24 * 60 * 60 * 1000) return `행사 ${CANCEL_DEADLINE_DAYS}일 전까지만 취소할 수 있어요`;
+  return null;
+};
+
 /** 주문명 = DB 상품명(Product.name). 줄바꿈은 한 칸 띄어쓰기로 바꿔 한 줄로 보낸다. 검증할 때도 같은 함수로 비교한다. */
 export const toOrderName = (name: string) => name.replace(/\s+/g, " ").trim();
 

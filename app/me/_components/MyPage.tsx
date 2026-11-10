@@ -8,6 +8,7 @@ import { Empty } from "@/components/empty/Empty";
 import { Fieldset } from "@/components/fieldset/Fieldset";
 import { Icon } from "@/components/icon/Icon";
 import { Modal } from "@/components/modal/Modal";
+import { TabNavigation } from "@/components/navigation/TabNavigation";
 import { Note } from "@/components/note/Note";
 import { TextField } from "@/components/text-field/TextField";
 import { StatusBar, ViewToggle, Window, WindowWell, type ListView } from "@/components/window/Window";
@@ -21,18 +22,25 @@ import {
 } from "@/lib/profile-rules";
 import { requestJson } from "@/lib/request-json";
 import { shrinkImage } from "@/lib/shrink-image";
-import type { Place, User } from "@/lib/types";
+import type { OrderHistory, Place, User } from "@/lib/types";
 import page from "../../_components/page.module.css";
 import { RestaurantGrid } from "../../_components/RestaurantGrid";
 import { useFlashToast } from "../../_components/useFlashToast";
 import styles from "../me.module.css";
+import { OrderHistoryWindow } from "./OrderHistoryWindow";
+import { MY_TABS, type MyTab } from "./tabs";
 
 type MyPageProps = {
   user: User;
   posts: Place[];
+  orders: OrderHistory;
+  /** 처음 열 탭 (/me?tab=payments) */
+  initialTab: MyTab;
 };
 
-export const MyPage = ({ user, posts: initialPosts }: MyPageProps) => {
+const TAB_ID = "my";
+
+export const MyPage = ({ user, posts: initialPosts, orders, initialTab }: MyPageProps) => {
   const router = useRouter();
   const { show, toast } = useFlashToast();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -46,6 +54,17 @@ export const MyPage = ({ user, posts: initialPosts }: MyPageProps) => {
   /** X를 눌러 삭제 확인 중인 글 */
   const [confirming, setConfirming] = useState<Place | null>(null);
   const [removingId, setRemovingId] = useState<string>();
+  const [tab, setTab] = useState<MyTab>(initialTab);
+
+  /** 탭을 바꾸면 주소(?tab=)도 바꿔 새로고침·뒤로가기 후에도 같은 탭을 연다. */
+  const changeTab = (next: string) => {
+    const value = next as MyTab;
+    setTab(value);
+    const url = new URL(window.location.href);
+    if (value === "posts") url.searchParams.delete("tab");
+    else url.searchParams.set("tab", value);
+    window.history.replaceState(null, "", url);
+  };
 
   const trimmed = nickname.trim();
   const nicknameError = validateNickname(nickname);
@@ -180,6 +199,22 @@ export const MyPage = ({ user, posts: initialPosts }: MyPageProps) => {
         </div>
       </Window>
 
+      <TabNavigation items={[...MY_TABS]} value={tab} onChange={changeTab} idPrefix={TAB_ID} aria-label="마이 페이지" />
+
+      {tab === "payments" && (
+        <OrderHistoryWindow kind="paid" items={orders.paid} onNotify={show} id={`${TAB_ID}-panel-payments`} labelledBy={`${TAB_ID}-tab-payments`} />
+      )}
+      {tab === "cancellations" && (
+        <OrderHistoryWindow
+          kind="cancelled"
+          items={orders.cancelled}
+          id={`${TAB_ID}-panel-cancellations`}
+          labelledBy={`${TAB_ID}-tab-cancellations`}
+        />
+      )}
+
+      {tab === "posts" && (
+      <div role="tabpanel" id={`${TAB_ID}-panel-posts`} aria-labelledby={`${TAB_ID}-tab-posts`}>
       <Window
         title="C:\구로\내가 쓴 맛집"
         icon={<FolderOpen size={14} />}
@@ -213,6 +248,8 @@ export const MyPage = ({ user, posts: initialPosts }: MyPageProps) => {
           )}
         </WindowWell>
       </Window>
+      </div>
+      )}
 
       <Modal
         open={confirming !== null}

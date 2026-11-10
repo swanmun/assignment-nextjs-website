@@ -5,8 +5,8 @@
 
 | 상태 | 범위 |
 | --- | --- |
-| ✅ 구현 | 결제 요청, 결제 완료 검증·기록, 결제 완료 웹훅(`Transaction.Paid`), 중복 기록 방지 |
-| ⏳ 예정 | 결제 취소 BFF, 결제 취소 웹훅, 정원·1인 1회, 결제/취소 내역 탭, 결제 바텀시트 |
+| ✅ 구현 | 결제 요청, 결제 완료 검증·기록, 결제 완료 웹훅(`Transaction.Paid`), 중복 기록 방지, 마이 결제/취소 내역 탭, 결제 취소 BFF |
+| ⏳ 예정 | 결제 취소 웹훅, 정원·1인 1회, 결제 바텀시트 |
 
 ## 1. 구성
 
@@ -16,13 +16,16 @@
 
 | 파일 | 역할 |
 | --- | --- |
-| `lib/payment-rules.ts` | 통화·결제수단·완료 경로·`PAYMENT_TYPE`·금액 부호(`toLedgerAmount`)·`customData` 타입·`toOrderName` (공용) |
+| `lib/payment-rules.ts` | 통화·결제수단·완료 경로·`PAYMENT_TYPE`·금액 부호(`toLedgerAmount`)·환불 규정·`customData` 타입·`toOrderName` (공용) |
 | `lib/portone.ts` | 포트원 환경변수, 서버 SDK, `fetchPortonePayment` (`server-only`) |
-| `lib/supabase/payment.ts` | `recordPaidPayment()` 검증·기록(완료 페이지·웹훅 공용), `completePayment()` (`server-only`) |
+| `lib/supabase/payment.ts` | `recordPaidPayment()`·`completePayment()`·`cancelMyPayment()`·`recordCancelledPayment()` (`server-only`) |
 | `lib/supabase/server.ts` | `createSupabaseAdminClient()` secret key 클라이언트 |
+| `lib/supabase/payment-history.ts` | `listMyOrders()` 결제·취소 내역 읽기(세션 클라이언트, RLS) |
+| `app/me/_components/OrderHistoryWindow.tsx` | 마이 › 결제 내역·취소 내역 탭(`OrderItem`) |
 | `app/products/[id]/_components/PayButton.tsx` | [결제하기] → `PortOne.requestPayment` |
 | `app/api/payments/complete/route.ts` | `POST /api/payments/complete` |
 | `app/api/payments/webhook/route.ts` | `POST /api/payments/webhook` |
+| `app/api/payments/[paymentId]/cancel/route.ts` | `POST /api/payments/[paymentId]/cancel` 결제 취소 |
 | `app/payments/complete/` | 결제 완료 페이지(`redirectUrl`) |
 | `supabase/migrations/*_payment_*.sql` | 제약·RLS·insert-only 트리거 |
 
@@ -51,6 +54,7 @@
 
 - `code`가 있으면 "결제가 완료되지 않았어요" + 메시지. BFF를 부르지 않는다.
 - 없으면 `POST /api/payments/complete { paymentId }` 결과를 보여 준다. 로그인 필수(`proxy.ts` PROTECTED).
+- 성공 시 [결제 내역 보기](`/me?tab=payments`)·[홈으로].
 - 새로고침해도 같은 결과(멱등).
 
 ## 5. 결제 완료 검증 (`recordPaidPayment`)
@@ -65,7 +69,7 @@
 6. 같은 회원·같은 상품의 다른 유효 결제가 있으면 `[payment] 같은 상품 중복 결제` 경고 로그(기록은 한다. ⏳ 1인 1회에서 차단).
 7. 스냅숏 INSERT → 결제 INSERT(6장).
 
-- 하나라도 틀리면 기록하지 않는다. 금액 불일치는 `[payment]` 에러 로그(⏳ 취소 기능이 생기면 자동 전액 취소).
+- 하나라도 틀리면 기록하지 않는다. 금액 불일치는 `[payment]` 에러 로그(⏳ 자동 전액 취소).
 - 실연동 전환 후 `channel.type === "LIVE"` 확인을 추가한다.
 
 | 상황 | 완료 BFF 응답 |
@@ -134,34 +138,63 @@
 - 브라우저가 완료 페이지에 못 온 경우(창 닫힘·앱 종료)의 누락을 웹훅이 채운다.
 - 30초 안에 응답한다(포트원 타임아웃).
 
-## 8. 결제 취소 (⏳ 예정)
+## 8. 결제 내역 (마이 페이지)
 
-- 마이 페이지 › 결제 내역에서 본인이 취소. `POST /api/payments/[paymentId]/cancel`.
-- 순서: 로그인 → 본인 `PAID` 행 확인 → `CANCELLED` 행이 있으면 그대로 성공(멱등) → 환불 규정 확인 → `payment.cancelPayment({ paymentId, reason, requester: "CUSTOMER", currentCancellableAmount })` → 9장 기록 함수로 `CANCELLED` 행 INSERT.
-- 전액 취소만. 환불 규정(기한·금액)은 PRD 확정 후 이 문서와 `lib/payment-rules.ts`에 상수로 둔다. 불가하면 버튼 비활성화(`OrderItem` `paid-locked`).
-- 취소하면 참여 인원이 1 줄어든다.
+- 탭: 내가 쓴 글 / 결제 내역 / 취소 내역. 주소 `?tab=payments`·`?tab=cancellations`로 바로 연다(기본 탭은 생략).
+- 읽기는 Server Component에서 `listMyOrders()` → 세션 클라이언트. RLS로 본인 행만 읽힌다(secret key 쓰지 않음).
+- `transaction_key`로 묶는다. 결제 내역 = `CANCELLED` 행이 없는 `PAID`(최신 결제순), 취소 내역 = `CANCELLED` 행(최신 취소순).
+- 표시는 **스냅숏** 기준(이름·일시·장소·이미지 `image_path_detail_md`). 상품이 바뀌어도 결제 당시 정보. 누르면 `/products/<product_id>`.
+- 결제 내역: 금액 `+amount`, 보조 문구 "MM.DD 결제 · 결제수단"(`snapshot_payment.paidAt`·`method`).
+- 취소 내역: "환불 |amount|", 보조 문구 "결제 원금액 · MM.DD 취소", 환불 상태 배지.
+- [결제 취소] 버튼은 환불 규정상 가능하면 `paid`, 아니면 `paid-locked` + 이유(9장).
+- 종류 배지는 상품 종류 컬럼이 없어 "강연·모임"으로 통일.
+- 빈 상태: 결제 "아직 신청한 강연·모임이 없어요" + [둘러보기](`/`), 취소 "취소한 내역이 없어요".
 
-## 9. 결제 취소 웹훅 (⏳ 예정)
+## 9. 결제 취소 (`POST /api/payments/[paymentId]/cancel`)
+
+- 마이 › 결제 내역 [결제 취소] → 확인 창("정말 취소할까요? 환불 금액: OO원") → BFF. 처리 중에는 버튼을 잠근다.
+- **전액 취소만.** 환불 규정(`lib/payment-rules.ts` `getCancelBlockReason`, 화면·BFF 공용):
+  - 행사 시작 **3일(72시간) 전까지** 전액 환불(`CANCEL_DEADLINE_DAYS = 3`). 일시 미정이면 가능. 일시는 스냅숏 `event_at` 기준.
+  - 그 뒤는 "행사 3일 전까지만 취소할 수 있어요", 끝난 행사는 "이미 끝난 행사예요" → `paid-locked`.
+- 순서 (`cancelMyPayment`):
+  1. paymentId uuid·로그인 확인 → `PAID` 행 조회(secret key). 없으면 404, 본인 아니면 403.
+  2. `CANCELLED` 행이 있으면 그대로 성공(멱등).
+  3. 환불 규정 확인 → 불가면 409 + 이유.
+  4. `payment.cancelPayment({ paymentId, storeId, reason: "고객 요청", requester: "CUSTOMER", currentCancellableAmount: PAID 금액 })`. `amount`를 넣지 않아 전액 취소, `currentCancellableAmount`로 이중 환불을 막는다.
+  5. 응답 `cancellation.status`: `SUCCEEDED` → 기록 / `REQUESTED` → 202 "취소 요청을 접수했어요"(기록은 취소 웹훅 ⏳) / `FAILED` → 502.
+  6. `recordCancelledPayment(paymentId)`로 `CANCELLED` 행 INSERT(10장 1·2·4·5·6). 응답 `{ paymentId, refundAmount }`.
+
+| 포트원 오류(`Payment.CancelPaymentError` `data.type`) | 처리 |
+| --- | --- |
+| `PAYMENT_ALREADY_CANCELLED` | 이미 취소됨(동시 클릭·콘솔 취소) → 6번 기록으로 진행 |
+| `CANCELLABLE_AMOUNT_CONSISTENCY_BROKEN` | 409 "취소할 수 있는 금액이 맞지 않아요" |
+| `PAYMENT_NOT_PAID` | 409 "취소할 수 없는 결제예요" |
+| `PG_PROVIDER` | 502 "카드사에서 취소를 처리하지 못했어요" (`pgMessage`는 로그) |
+| 그 외 | 500 |
+
+- 성공하면 화면을 새로 읽어(`router.refresh()`) 항목을 취소 내역으로 옮긴다. 참여 인원은 취소되지 않은 `PAID` 수라 자동으로 1 줄어든다.
+- DB: `CANCELLED` INSERT는 트리거(`payment_check_cancel`)가 같은 키의 `PAID` 행 존재·같은 회원·상품·`amount = −PAID 금액`을 검사한다.
+
+## 10. 결제 취소 웹훅 (⏳ 예정)
 
 - 같은 엔드포인트에서 `Transaction.Cancelled`를 처리한다. `Transaction.PartialCancelled`는 부분 취소를 하지 않으므로 경고 로그 후 200.
-- 기록 함수 `recordCancelledPayment(paymentId)`를 취소 BFF와 함께 쓴다.
+- 기록 함수 `recordCancelledPayment(paymentId)`(✅ 취소 BFF에서 사용 중)를 그대로 쓴다.
   1. `(transaction_key, 'CANCELLED')` 행이 있으면 끝(멱등).
   2. `getPayment` → `status === "CANCELLED"`, `storeId` 확인.
-  3. `PAID` 행이 없으면(결제 웹훅 누락) 5장 검증으로 `PAID` 행을 먼저 만든다. 상태 검사만 `CANCELLED`도 허용.
+  3. ⏳ `PAID` 행이 없으면(결제 웹훅 누락) 5장 검증으로 `PAID` 행을 먼저 만든다. 상태 검사만 `CANCELLED`도 허용. (지금은 404)
   4. `cancellations`에서 `status === "SUCCEEDED"`인 건의 `totalAmount` 합이 `PAID` 금액과 같은지 확인.
   5. `transaction_key = paymentId`, `type = 'CANCELLED'`, `amount = toLedgerAmount('CANCELLED', 합계)`(음수), `product_id`·`user_id`는 `PAID` 행과 같게, 스냅숏은 취소 시점 결제 요약으로 새로 만든다.
   6. 23505면 이미 기록된 것으로 성공(취소 BFF와 웹훅 동시 도착).
 - 응답 규칙은 7장과 같다.
-- DB 보강: `CANCELLED` INSERT 시 같은 키의 `PAID` 행 존재·금액 합 0을 트리거로 검사한다.
 
-## 10. 정원·1인 1회 (⏳ 예정)
+## 11. 정원·1인 1회 (⏳ 예정)
 
 - 정원 = `Product.capacity`, 참여 수 = 취소되지 않은 `PAID` 수. 차면 [결제하기]를 막고, 검증 시점에 넘었으면 기록하지 않고 자동 전액 취소.
 - 1인 1회: 이미 결제한 상품이면 버튼을 [신청 완료 · 결제 내역 보기]로. 5장 6번 경고를 차단으로 바꾼다.
 - 집계는 secret key 서버 코드에서 한다.
 
-## 11. 테스트
+## 12. 테스트
 
 - 테스트 채널은 실제 출금되지 않는다. 결제 상태는 포트원 콘솔 또는 PortOne MCP `getPaymentsByFilter`로 확인.
-- 시나리오: 결제 성공 → 행 1개 / 완료 페이지 새로고침 → 그대로 1개 / 완료 페이지 안 가고 창 닫기 → 웹훅으로 1개 / 웹훅 재전송·콘솔 [호출 테스트] → 그대로 1개 / 서명 틀린 요청 → 400 / 다른 계정으로 완료 페이지 → 403 / 결제창 닫기 → 실패 안내.
+- 시나리오: 결제 성공 → 행 1개 → [결제 내역 보기]에 1건 / 완료 페이지 새로고침 → 그대로 1개 / 완료 페이지 안 가고 창 닫기 → 웹훅으로 1개 / 웹훅 재전송·콘솔 [호출 테스트] → 그대로 1개 / 서명 틀린 요청 → 400 / [결제 취소] → 취소 내역으로 이동·`CANCELLED` 행 1개(−금액) / 취소 두 번 클릭 → 행 그대로 1개 / 행사 3일 이내 → 버튼 잠김·BFF 409 / 다른 계정으로 완료 페이지 → 403 / 결제창 닫기 → 실패 안내.
 - `payment` UPDATE·DELETE 시도 → 트리거 오류, `amount` 부호 틀린 INSERT → CHECK 오류.
